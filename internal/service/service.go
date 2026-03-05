@@ -1,6 +1,6 @@
 package service
 
 type Service interface {
-	GetLink(id string) (string, error)
+	GetLink(shortedLink string) (string, error)
 	AddLink(originalLink string) (string, error)
 }
