@@ -43,12 +43,12 @@ func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
 	return "", errors.New("Link doesn't exist")
 }
 
-func (r *FileLinkRepository) AddLink(originalLink string) (string, error) {
-	shortedLink, err := r.GetLink(originalLink)
+func (r *FileLinkRepository) AddLink(shortedLink string, originalLink string) error {
+	_, err := r.GetLink(shortedLink)
 	if err == nil {
-		return shortedLink, nil
+		return nil
 	}
 
-	// TODO: логика генерации строки
-	return "", nil
+	r.m[shortedLink] = originalLink
+	return nil
 }

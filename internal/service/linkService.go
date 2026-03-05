@@ -1,6 +1,9 @@
 package service
 
-import "github.com/Vadich007/shortener/internal/repository"
+import (
+	"github.com/Vadich007/shortener/internal/repository"
+	"github.com/Vadich007/shortener/pkg/shorter"
+)
 
 type LinkService struct {
 	repository repository.LinkRepository
@@ -15,5 +18,6 @@ func (s *LinkService) GetLink(shortedLink string) (string, error) {
 }
 
 func (s *LinkService) AddLink(originalLink string) (string, error) {
-	return s.repository.AddLink(originalLink)
+	shortedLink := shorter.Shorten(originalLink)
+	return shortedLink, s.repository.AddLink(shortedLink, originalLink)
 }
