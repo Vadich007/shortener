@@ -10,7 +10,7 @@ type FileLinkRepository struct {
 	m map[string]string
 }
 
-func NewLinkRepository(path string) (*FileLinkRepository, error) {
+func NewFileLinkRepository(path string) (*FileLinkRepository, error) {
 	m := make(map[string]string)
 	file, err := os.Open(path)
 	if err != nil {

@@ -4,10 +4,19 @@ import (
 	"net/http"
 
 	"github.com/Vadich007/shortener/internal/handler"
+	"github.com/Vadich007/shortener/internal/repository"
+	"github.com/Vadich007/shortener/internal/service"
 )
 
 func main() {
-	handler = 
+	repo, err := repository.NewFileLinkRepository("file.csv")
+	if err != nil {
+		return
+	}
+	serv := service.NewLinkService(repo)
+	hand := handler.NewLinkHandler(serv)
+
 	mux := http.NewServeMux()
-	mux.Handle("/", handler.LinkHandler)
+	mux.Handle("/", hand)
+	http.ListenAndServe(":8080", mux)
 }
