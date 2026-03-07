@@ -10,26 +10,6 @@ type FileLinkRepository struct {
 
 func NewFileLinkRepository(path string) (*FileLinkRepository, error) {
 	m := make(map[string]string)
-	// file, err := os.Open(path)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer file.Close()
-
-	// reader := csv.NewReader(file)
-	// reader.Comma = ','
-	// reader.Comment = '#'
-	// reader.FieldsPerRecord = -1
-
-	// records, err := reader.ReadAll()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// for _, record := range records {
-	// 	m[record[0]] = record[1]
-	// }
-
 	return &FileLinkRepository{m: m}, nil
 }
 
