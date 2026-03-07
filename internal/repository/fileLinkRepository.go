@@ -18,7 +18,7 @@ func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
 	if exist {
 		return originalLink, nil
 	}
-	return "", errors.New("Link doesn't exist")
+	return "", errors.New("link doesn't exist")
 }
 
 func (r *FileLinkRepository) AddLink(shortedLink string, originalLink string) error {
