@@ -8,9 +8,9 @@ type InMemoryLinkRepository struct {
 	m map[string]string
 }
 
-func NewInMemoryLinkRepository() (*InMemoryLinkRepository, error) {
+func NewInMemoryLinkRepository() *InMemoryLinkRepository {
 	m := make(map[string]string)
-	return &InMemoryLinkRepository{m: m}, nil
+	return &InMemoryLinkRepository{m: m}
 }
 
 func (r *InMemoryLinkRepository) GetLink(shortedLink string) (string, error) {

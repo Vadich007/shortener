@@ -13,7 +13,7 @@ import (
 )
 
 func TestServeHTTPMethodNotAllowed(t *testing.T) {
-	repo, _ := repository.NewInMemoryLinkRepository()
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 
@@ -29,7 +29,7 @@ func TestServeHTTPMethodNotAllowed(t *testing.T) {
 }
 
 func TestServeHTTPNotFound(t *testing.T) {
-	repo, _ := repository.NewInMemoryLinkRepository()
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 
@@ -45,7 +45,7 @@ func TestServeHTTPNotFound(t *testing.T) {
 }
 
 func TestServeHTTPGetSuccess(t *testing.T) {
-	repo, _ := repository.NewInMemoryLinkRepository()
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 
@@ -65,7 +65,7 @@ func TestServeHTTPGetSuccess(t *testing.T) {
 }
 
 func TestServeHTTPPostSuccess(t *testing.T) {
-	repo, _ := repository.NewInMemoryLinkRepository()
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 
@@ -86,7 +86,7 @@ func TestServeHTTPPostSuccess(t *testing.T) {
 }
 
 func TestServeHTTPPostEmptyBody(t *testing.T) {
-	repo, _ := repository.NewInMemoryLinkRepository()
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 
@@ -102,7 +102,7 @@ func TestServeHTTPPostEmptyBody(t *testing.T) {
 }
 
 func TestServeHTTPPostEmptyStringBody(t *testing.T) {
-	repo, _ := repository.NewInMemoryLinkRepository()
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 

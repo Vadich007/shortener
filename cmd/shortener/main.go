@@ -9,10 +9,7 @@ import (
 )
 
 func main() {
-	repo, err := repository.NewInMemoryLinkRepository()
-	if err != nil {
-		return
-	}
+	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := handler.NewLinkHandler(serv)
 
