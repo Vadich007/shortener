@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 )
 
-func Shorten(originalURL string) string {
-	hash := md5.Sum([]byte(originalURL))
+func Shorten(originalLink string) string {
+	hash := md5.Sum([]byte(originalLink))
 	shortCode := hex.EncodeToString(hash[:])
 	return shortCode
 }

@@ -17,33 +17,39 @@ func NewLinkHandler(service service.Service) *LinkHandler {
 
 func (h *LinkHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-
 	case http.MethodGet:
-		originalLink, err := h.service.GetLink(r.URL.Path[1:])
-		if err != nil {
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Location", originalLink)
-		w.WriteHeader(http.StatusTemporaryRedirect)
-
+		h.handleGet(w, r)
 	case http.MethodPost:
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "Error", http.StatusInternalServerError)
-			return
-		}
-		defer r.Body.Close()
-		bodyString := string(body)
-		shortedLink, err := h.service.AddLink(bodyString)
-		if err != nil {
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
-		data := []byte(shortedLink)
-		w.Write(data)
+		h.handlePost(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (h *LinkHandler) handleGet(w http.ResponseWriter, r *http.Request) {
+	originalLink, err := h.service.GetLink(r.URL.Path[1:])
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Location", originalLink)
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *LinkHandler) handlePost(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error", http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+	bodyString := string(body)
+	shortedLink, err := h.service.AddLink(bodyString)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	data := []byte(shortedLink)
+	w.Write(data)
 }
