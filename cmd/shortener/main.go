@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	repo, err := repository.NewFileLinkRepository()
+	repo, err := repository.NewInMemoryLinkRepository()
 	if err != nil {
 		return
 	}

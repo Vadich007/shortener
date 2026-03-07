@@ -4,16 +4,16 @@ import (
 	"errors"
 )
 
-type FileLinkRepository struct {
+type InMemoryLinkRepository struct {
 	m map[string]string
 }
 
-func NewFileLinkRepository() (*FileLinkRepository, error) {
+func NewInMemoryLinkRepository() (*InMemoryLinkRepository, error) {
 	m := make(map[string]string)
-	return &FileLinkRepository{m: m}, nil
+	return &InMemoryLinkRepository{m: m}, nil
 }
 
-func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
+func (r *InMemoryLinkRepository) GetLink(shortedLink string) (string, error) {
 	originalLink, exist := r.m[shortedLink]
 	if exist {
 		return originalLink, nil
@@ -21,7 +21,7 @@ func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
 	return "", errors.New("link doesn't exist")
 }
 
-func (r *FileLinkRepository) AddLink(shortedLink string, originalLink string) error {
+func (r *InMemoryLinkRepository) AddLink(shortedLink string, originalLink string) error {
 	_, err := r.GetLink(shortedLink)
 	if err == nil {
 		return nil
