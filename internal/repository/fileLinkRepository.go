@@ -8,7 +8,7 @@ type FileLinkRepository struct {
 	m map[string]string
 }
 
-func NewFileLinkRepository(path string) (*FileLinkRepository, error) {
+func NewFileLinkRepository() (*FileLinkRepository, error) {
 	m := make(map[string]string)
 	return &FileLinkRepository{m: m}, nil
 }
