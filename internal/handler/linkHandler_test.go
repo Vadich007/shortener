@@ -17,7 +17,7 @@ import (
 )
 
 func TestHandleGetMethodNotAllowed(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
@@ -34,7 +34,7 @@ func TestHandleGetMethodNotAllowed(t *testing.T) {
 }
 
 func TestHandleGetNotFound(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
@@ -51,7 +51,7 @@ func TestHandleGetNotFound(t *testing.T) {
 }
 
 func TestHandleGetSuccess(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
@@ -75,7 +75,7 @@ func TestHandleGetSuccess(t *testing.T) {
 }
 
 func TestHandlePostSuccess(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
@@ -99,7 +99,7 @@ func TestHandlePostSuccess(t *testing.T) {
 }
 
 func TestHandlePostEmptyBody(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
@@ -116,7 +116,7 @@ func TestHandlePostEmptyBody(t *testing.T) {
 }
 
 func TestHandlePostEmptyStringBody(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)

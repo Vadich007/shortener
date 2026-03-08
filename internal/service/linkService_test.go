@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetLinkNotExist(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, f)
 
@@ -21,7 +21,7 @@ func TestGetLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkExist(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, f)
 	originalName := "link"
@@ -35,7 +35,7 @@ func TestGetLinkExist(t *testing.T) {
 }
 
 func TestAddLinkExist(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, f)
 	originalName := "link"
@@ -48,7 +48,7 @@ func TestAddLinkExist(t *testing.T) {
 }
 
 func TestAddLinkNotExist(t *testing.T) {
-	f := flags.ProcessingFlags()
+	f := flags.Flags{A: "localhost:8080", B: ""}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, f)
 	originalName := "link"
