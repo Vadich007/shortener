@@ -2,8 +2,10 @@ package handler
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/Vadich007/shortener/internal/repository"
@@ -49,10 +51,10 @@ func TestServeHTTPGetSuccess(t *testing.T) {
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
 
-	originalLink := "asdsad"
+	originalLink := "https://practicum.yandex.ru/"
 	shortedLink, _ := serv.AddLink(originalLink)
 
-	req := httptest.NewRequest(http.MethodGet, "/"+shortedLink, nil)
+	req := httptest.NewRequest(http.MethodGet, "/"+strings.Split(shortedLink, "/")[3], nil)
 	w := httptest.NewRecorder()
 
 	hand.ServeHTTP(w, req)
@@ -61,7 +63,7 @@ func TestServeHTTPGetSuccess(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, resp.StatusCode, http.StatusTemporaryRedirect)
-	assert.Equal(t, resp.Header["Location"], originalLink)
+	assert.Equal(t, resp.Header.Get("Location"), originalLink)
 }
 
 func TestServeHTTPPostSuccess(t *testing.T) {
@@ -70,7 +72,7 @@ func TestServeHTTPPostSuccess(t *testing.T) {
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
-	shortedLink := shorter.Shorten(originalLink)
+	shortedLink := "http://localhost:8080/" + shorter.Shorten(originalLink)
 	body := bytes.NewBufferString(originalLink)
 
 	req := httptest.NewRequest(http.MethodPost, "/", body)
@@ -81,8 +83,10 @@ func TestServeHTTPPostSuccess(t *testing.T) {
 	resp := w.Result()
 	defer resp.Body.Close()
 
+	actual, _ := io.ReadAll(resp.Body)
+
 	assert.Equal(t, resp.StatusCode, http.StatusCreated)
-	assert.Equal(t, resp.Body, shortedLink)
+	assert.Equal(t, string(actual), shortedLink)
 }
 
 func TestServeHTTPPostEmptyBody(t *testing.T) {

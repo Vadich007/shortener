@@ -20,7 +20,7 @@ func TestGetLinkExist(t *testing.T) {
 	shortedLink := "short"
 	err := repo.AddLink(shortedLink, originalName)
 	assert.Equal(t, err, nil)
-	link, err := repo.GetLink(originalName)
+	link, err := repo.GetLink(shortedLink)
 
 	assert.Equal(t, link, originalName)
 	assert.Equal(t, err, nil)

@@ -44,6 +44,10 @@ func (h *LinkHandler) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	bodyString := string(body)
+	if bodyString == "" {
+		http.Error(w, "Error", http.StatusBadRequest)
+		return
+	}
 	shortedLink, err := h.service.AddLink(bodyString)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
