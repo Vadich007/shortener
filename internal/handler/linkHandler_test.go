@@ -11,10 +11,11 @@ import (
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/Vadich007/shortener/pkg/shorter"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestServeHTTPMethodNotAllowed(t *testing.T) {
+func TestHandleGetMethodNotAllowed(t *testing.T) {
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
@@ -22,23 +23,7 @@ func TestServeHTTPMethodNotAllowed(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPut, "/", nil)
 	w := httptest.NewRecorder()
 
-	hand.ServeHTTP(w, req)
-
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	assert.Equal(t, resp.StatusCode, http.StatusMethodNotAllowed)
-}
-
-func TestServeHTTPNotFound(t *testing.T) {
-	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
-	hand := NewLinkHandler(serv)
-
-	req := httptest.NewRequest(http.MethodGet, "/asdsad", nil)
-	w := httptest.NewRecorder()
-
-	hand.ServeHTTP(w, req)
+	hand.HandleGet(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -46,10 +31,29 @@ func TestServeHTTPNotFound(t *testing.T) {
 	assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
 }
 
-func TestServeHTTPGetSuccess(t *testing.T) {
+func TestHandleGetNotFound(t *testing.T) {
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
+
+	req := httptest.NewRequest(http.MethodGet, "/asdsad", nil)
+	w := httptest.NewRecorder()
+
+	hand.HandleGet(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+}
+
+func TestHandleGetSuccess(t *testing.T) {
+	repo := repository.NewInMemoryLinkRepository()
+	serv := service.NewLinkService(repo)
+	hand := NewLinkHandler(serv)
+
+	r := chi.NewRouter()
+	r.Get("/{shortedLink}", hand.HandleGet)
 
 	originalLink := "https://practicum.yandex.ru/"
 	shortedLink, _ := serv.AddLink(originalLink)
@@ -57,7 +61,7 @@ func TestServeHTTPGetSuccess(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/"+strings.Split(shortedLink, "/")[3], nil)
 	w := httptest.NewRecorder()
 
-	hand.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -66,7 +70,7 @@ func TestServeHTTPGetSuccess(t *testing.T) {
 	assert.Equal(t, resp.Header.Get("Location"), originalLink)
 }
 
-func TestServeHTTPPostSuccess(t *testing.T) {
+func TestHandlePostSuccess(t *testing.T) {
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
@@ -78,7 +82,7 @@ func TestServeHTTPPostSuccess(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", body)
 	w := httptest.NewRecorder()
 
-	hand.ServeHTTP(w, req)
+	hand.HandlePost(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -89,7 +93,7 @@ func TestServeHTTPPostSuccess(t *testing.T) {
 	assert.Equal(t, string(actual), shortedLink)
 }
 
-func TestServeHTTPPostEmptyBody(t *testing.T) {
+func TestHandlePostEmptyBody(t *testing.T) {
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
@@ -97,7 +101,7 @@ func TestServeHTTPPostEmptyBody(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
 	w := httptest.NewRecorder()
 
-	hand.ServeHTTP(w, req)
+	hand.HandlePost(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -105,7 +109,7 @@ func TestServeHTTPPostEmptyBody(t *testing.T) {
 	assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
 }
 
-func TestServeHTTPPostEmptyStringBody(t *testing.T) {
+func TestHandlePostEmptyStringBody(t *testing.T) {
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := NewLinkHandler(serv)
@@ -113,7 +117,7 @@ func TestServeHTTPPostEmptyStringBody(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(""))
 	w := httptest.NewRecorder()
 
-	hand.ServeHTTP(w, req)
+	hand.HandlePost(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()

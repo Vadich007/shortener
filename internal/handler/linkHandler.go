@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Vadich007/shortener/internal/service"
+	"github.com/go-chi/chi/v5"
 )
 
 type LinkHandler struct {
@@ -15,19 +16,9 @@ func NewLinkHandler(service service.Service) *LinkHandler {
 	return &LinkHandler{service: service}
 }
 
-func (h *LinkHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		h.handleGet(w, r)
-	case http.MethodPost:
-		h.handlePost(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func (h *LinkHandler) handleGet(w http.ResponseWriter, r *http.Request) {
-	originalLink, err := h.service.GetLink(r.URL.Path[1:])
+func (h *LinkHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
+	shortedLink := chi.URLParam(r, "shortedLink")
+	originalLink, err := h.service.GetLink(shortedLink)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -36,7 +27,7 @@ func (h *LinkHandler) handleGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *LinkHandler) handlePost(w http.ResponseWriter, r *http.Request) {
+func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)

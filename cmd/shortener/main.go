@@ -6,6 +6,7 @@ import (
 	"github.com/Vadich007/shortener/internal/handler"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -13,7 +14,8 @@ func main() {
 	serv := service.NewLinkService(repo)
 	hand := handler.NewLinkHandler(serv)
 
-	mux := http.NewServeMux()
-	mux.Handle("/", hand)
-	http.ListenAndServe(":8080", mux)
+	r := chi.NewRouter()
+	r.Get("/{shortedLink}", hand.HandleGet)
+	r.Post("/", hand.HandlePost)
+	http.ListenAndServe(":8080", r)
 }
