@@ -3,14 +3,16 @@ package service
 import (
 	"testing"
 
+	"github.com/Vadich007/shortener/internal/config/flags"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/pkg/shorter"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetLinkNotExist(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := NewLinkService(repo)
+	serv := NewLinkService(repo, f)
 
 	link, err := serv.GetLink("notExist")
 
@@ -19,8 +21,9 @@ func TestGetLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkExist(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := NewLinkService(repo)
+	serv := NewLinkService(repo, f)
 	originalName := "link"
 	shortedLink := "short"
 	repo.AddLink(shortedLink, originalName)
@@ -32,8 +35,9 @@ func TestGetLinkExist(t *testing.T) {
 }
 
 func TestAddLinkExist(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := NewLinkService(repo)
+	serv := NewLinkService(repo, f)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
 	repo.AddLink(shorter.Shorten(originalName), originalName)
@@ -44,8 +48,9 @@ func TestAddLinkExist(t *testing.T) {
 }
 
 func TestAddLinkNotExist(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := NewLinkService(repo)
+	serv := NewLinkService(repo, f)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
 

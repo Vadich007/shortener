@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Vadich007/shortener/internal/config/flags"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/Vadich007/shortener/pkg/shorter"
@@ -16,8 +17,9 @@ import (
 )
 
 func TestHandleGetMethodNotAllowed(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
+	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPut, "/", nil)
@@ -32,8 +34,9 @@ func TestHandleGetMethodNotAllowed(t *testing.T) {
 }
 
 func TestHandleGetNotFound(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
+	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodGet, "/asdsad", nil)
@@ -48,8 +51,9 @@ func TestHandleGetNotFound(t *testing.T) {
 }
 
 func TestHandleGetSuccess(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
+	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
 
 	r := chi.NewRouter()
@@ -71,8 +75,9 @@ func TestHandleGetSuccess(t *testing.T) {
 }
 
 func TestHandlePostSuccess(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
+	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
@@ -94,8 +99,9 @@ func TestHandlePostSuccess(t *testing.T) {
 }
 
 func TestHandlePostEmptyBody(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
+	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -110,8 +116,9 @@ func TestHandlePostEmptyBody(t *testing.T) {
 }
 
 func TestHandlePostEmptyStringBody(t *testing.T) {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo)
+	serv := service.NewLinkService(repo, f)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(""))

@@ -11,8 +11,8 @@ type LinkService struct {
 	flags      flags.Flags
 }
 
-func NewLinkService(r repository.LinkRepository) *LinkService {
-	return &LinkService{repository: r}
+func NewLinkService(r repository.LinkRepository, f flags.Flags) *LinkService {
+	return &LinkService{repository: r, flags: f}
 }
 
 func (s *LinkService) GetLink(shortedLink string) (string, error) {
@@ -21,5 +21,5 @@ func (s *LinkService) GetLink(shortedLink string) (string, error) {
 
 func (s *LinkService) AddLink(originalLink string) (string, error) {
 	shortedLink := shorter.Shorten(originalLink)
-	return "http://" + s.flags.A + s.flags.B + shortedLink, s.repository.AddLink(shortedLink, originalLink)
+	return "http://" + s.flags.A + s.flags.B + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
 }
