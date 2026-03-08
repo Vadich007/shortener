@@ -19,8 +19,8 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Get(f.B+"/{shortedLink}", hand.HandleGet)
-	r.Post(f.B+"/", hand.HandlePost)
+	r.Get("/{shortedLink}", hand.HandleGet)
+	r.Post("/", hand.HandlePost)
 
 	if err := http.ListenAndServe(f.A, r); err != nil {
 		log.Fatal("Server failed to start:", err)
