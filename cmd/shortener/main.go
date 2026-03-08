@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/Vadich007/shortener/internal/config/flags"
 	"github.com/Vadich007/shortener/internal/handler"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
@@ -10,12 +11,15 @@ import (
 )
 
 func main() {
+	f := flags.ProcessingFlags()
 	repo := repository.NewInMemoryLinkRepository()
 	serv := service.NewLinkService(repo)
 	hand := handler.NewLinkHandler(serv)
 
 	r := chi.NewRouter()
-	r.Get("/{shortedLink}", hand.HandleGet)
-	r.Post("/", hand.HandlePost)
-	http.ListenAndServe(":8080", r)
+
+	r.Get(f.B+"/{shortedLink}", hand.HandleGet)
+	r.Post(f.B, hand.HandlePost)
+
+	http.ListenAndServe(f.A, r)
 }
