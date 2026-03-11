@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
+	"sync"
 )
 
 type InMemoryLinkRepository struct {
-	m map[string]string
+	mu sync.RWMutex
+	m  map[string]string
 }
 
 func NewInMemoryLinkRepository() *InMemoryLinkRepository {
@@ -14,6 +16,9 @@ func NewInMemoryLinkRepository() *InMemoryLinkRepository {
 }
 
 func (r *InMemoryLinkRepository) GetLink(shortedLink string) (string, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	originalLink, exist := r.m[shortedLink]
 	if exist {
 		return originalLink, nil
@@ -22,8 +27,9 @@ func (r *InMemoryLinkRepository) GetLink(shortedLink string) (string, error) {
 }
 
 func (r *InMemoryLinkRepository) AddLink(shortedLink string, originalLink string) error {
-	_, err := r.GetLink(shortedLink)
-	if err == nil {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, exist := r.m[shortedLink]; exist {
 		return nil
 	}
 
