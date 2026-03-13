@@ -1,18 +1,18 @@
 package service
 
 import (
-	"github.com/Vadich007/shortener/internal/config/flags"
+	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/pkg/shorter"
 )
 
 type LinkService struct {
 	repository repository.LinkRepository
-	flags      flags.Flags
+	conf       config.Config
 }
 
-func NewLinkService(r repository.LinkRepository, f flags.Flags) *LinkService {
-	return &LinkService{repository: r, flags: f}
+func NewLinkService(r repository.LinkRepository, conf config.Config) *LinkService {
+	return &LinkService{repository: r, conf: conf}
 }
 
 func (s *LinkService) GetLink(shortedLink string) (string, error) {
@@ -21,5 +21,5 @@ func (s *LinkService) GetLink(shortedLink string) (string, error) {
 
 func (s *LinkService) AddLink(originalLink string) (string, error) {
 	shortedLink := shorter.Shorten(originalLink)
-	return s.flags.B + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
+	return s.conf.BaseUrl + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
 }

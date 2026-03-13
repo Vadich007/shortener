@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Vadich007/shortener/internal/config/flags"
+	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
@@ -12,9 +12,9 @@ import (
 )
 
 func main() {
-	f := flags.ProcessingFlags()
+	conf := config.GetConfig()
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := handler.NewLinkHandler(serv)
 
 	r := chi.NewRouter()
@@ -22,7 +22,7 @@ func main() {
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Post("/", hand.HandlePost)
 
-	if err := http.ListenAndServe(f.A, r); err != nil {
+	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
 }
