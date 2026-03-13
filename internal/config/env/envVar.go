@@ -6,12 +6,12 @@ import (
 
 type Env struct {
 	ServerAddress string
-	BaseUrl       string
+	BaseURL       string
 }
 
 func GetEnv() Env {
 	return Env{
 		ServerAddress: os.Getenv("SERVER_ADDRESS"),
-		BaseUrl:       os.Getenv("BASE_URL"),
+		BaseURL:       os.Getenv("BASE_URL"),
 	}
 }

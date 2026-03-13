@@ -21,5 +21,5 @@ func (s *LinkService) GetLink(shortedLink string) (string, error) {
 
 func (s *LinkService) AddLink(originalLink string) (string, error) {
 	shortedLink := shorter.Shorten(originalLink)
-	return s.conf.BaseUrl + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
+	return s.conf.BaseURL + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
 }

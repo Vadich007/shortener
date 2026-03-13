@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetLinkNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 
@@ -21,7 +21,7 @@ func TestGetLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
@@ -35,7 +35,7 @@ func TestGetLinkExist(t *testing.T) {
 }
 
 func TestAddLinkExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
@@ -48,7 +48,7 @@ func TestAddLinkExist(t *testing.T) {
 }
 
 func TestAddLinkNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 	originalName := "link"

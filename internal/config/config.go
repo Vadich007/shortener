@@ -7,14 +7,14 @@ import (
 
 type Config struct {
 	ServerAddress string
-	BaseUrl       string
+	BaseURL       string
 }
 
 func GetConfig() Config {
-	var serverAddress, baseUrl string
+	var serverAddress, baseURL string
 	env := env.GetEnv()
 	serverAddress = env.ServerAddress
-	baseUrl = env.BaseUrl
+	baseURL = env.BaseURL
 
 	flag := flags.ProcessingFlags()
 
@@ -22,12 +22,12 @@ func GetConfig() Config {
 		serverAddress = flag.A
 	}
 
-	if baseUrl == "" {
-		baseUrl = flag.B
+	if baseURL == "" {
+		baseURL = flag.B
 	}
 
 	return Config{
 		ServerAddress: serverAddress,
-		BaseUrl:       baseUrl,
+		BaseURL:       baseURL,
 	}
 }
