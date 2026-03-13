@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Vadich007/shortener/internal/config/flags"
+	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/Vadich007/shortener/pkg/shorter"
@@ -17,9 +17,9 @@ import (
 )
 
 func TestHandleGetMethodNotAllowed(t *testing.T) {
-	f := flags.Flags{A: "localhost:8080", B: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPut, "/", nil)
@@ -34,9 +34,9 @@ func TestHandleGetMethodNotAllowed(t *testing.T) {
 }
 
 func TestHandleGetNotFound(t *testing.T) {
-	f := flags.Flags{A: "localhost:8080", B: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodGet, "/asdsad", nil)
@@ -51,9 +51,9 @@ func TestHandleGetNotFound(t *testing.T) {
 }
 
 func TestHandleGetSuccess(t *testing.T) {
-	f := flags.Flags{A: "localhost:8080", B: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
 	r := chi.NewRouter()
@@ -75,9 +75,9 @@ func TestHandleGetSuccess(t *testing.T) {
 }
 
 func TestHandlePostSuccess(t *testing.T) {
-	f := flags.Flags{A: "localhost:8080", B: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
@@ -99,9 +99,9 @@ func TestHandlePostSuccess(t *testing.T) {
 }
 
 func TestHandlePostEmptyBody(t *testing.T) {
-	f := flags.Flags{A: "localhost:8080", B: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -116,9 +116,9 @@ func TestHandlePostEmptyBody(t *testing.T) {
 }
 
 func TestHandlePostEmptyStringBody(t *testing.T) {
-	f := flags.Flags{A: "localhost:8080", B: "http://localhost:8080"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseUrl: "http://localhost:8080"}
 	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(""))
