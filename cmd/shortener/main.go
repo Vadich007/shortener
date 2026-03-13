@@ -6,6 +6,7 @@ import (
 
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
+	"github.com/Vadich007/shortener/internal/handler/middleware"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -18,6 +19,8 @@ func main() {
 	hand := handler.NewLinkHandler(serv)
 
 	r := chi.NewRouter()
+
+	r.Use(middleware.WithLogging)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Post("/", hand.HandlePost)
