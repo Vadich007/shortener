@@ -17,6 +17,10 @@ type loggingResponseWriter struct {
 	responseData *responseData
 }
 
+type LoggingMiddleware struct {
+	Sugar zap.SugaredLogger
+}
+
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
 	r.responseData.size += size
@@ -28,9 +32,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-var sugar zap.SugaredLogger
-
-func WithLogging(h http.Handler) http.Handler {
+func (l LoggingMiddleware) WithLogging(h http.Handler) http.Handler {
 	logFn := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -47,7 +49,7 @@ func WithLogging(h http.Handler) http.Handler {
 		h.ServeHTTP(&lw, r)
 		duration := time.Since(start)
 
-		sugar.Infoln(
+		l.Sugar.Infoln(
 			"uri", r.RequestURI,
 			"method", r.Method,
 			"status", responseData.status,
