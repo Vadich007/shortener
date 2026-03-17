@@ -23,3 +23,11 @@ func (s *LinkService) AddLink(originalLink string) (string, error) {
 	shortedLink := shorter.Shorten(originalLink)
 	return s.conf.BaseURL + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
 }
+
+func (s *LinkService) GetLinkByOriginal(originalLink string) (string, error) {
+	shortedLink := shorter.Shorten(originalLink)
+	if _, err := s.GetLink(shortedLink); err != nil {
+		return "", err
+	}
+	return s.conf.BaseURL + "/" + shortedLink, nil
+}
