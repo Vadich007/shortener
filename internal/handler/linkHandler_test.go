@@ -143,7 +143,7 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 	originalLink := "example.com"
 
 	rawReq := model.Request{
-		Url: originalLink,
+		URL: originalLink,
 	}
 
 	jsonData, _ := json.Marshal(rawReq)
@@ -178,7 +178,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 	}
 
 	rawReq := model.Request{
-		Url: originalLink,
+		URL: originalLink,
 	}
 
 	jsonData, _ := json.Marshal(rawReq)
@@ -210,7 +210,7 @@ func TestHandlePostJsonWrongHeader(t *testing.T) {
 	serv.AddLink(originalLink)
 
 	rawReq := model.Request{
-		Url: originalLink,
+		URL: originalLink,
 	}
 
 	jsonData, _ := json.Marshal(rawReq)

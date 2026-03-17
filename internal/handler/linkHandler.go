@@ -64,7 +64,7 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalLink, err := h.service.GetLinkByOriginal(req.Url)
+	originalLink, err := h.service.GetLinkByOriginal(req.URL)
 
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
