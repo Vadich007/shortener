@@ -58,3 +58,28 @@ func TestAddLinkNotExist(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, actualShortedLink, expectedShortedLink)
 }
+
+func TestGetLinkByOriginNotExist(t *testing.T) {
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	repo := repository.NewInMemoryLinkRepository()
+	serv := NewLinkService(repo, conf)
+
+	link, err := serv.GetLinkByOriginal("notExist")
+
+	assert.Equal(t, link, "")
+	assert.Equal(t, err.Error(), "link doesn't exist")
+}
+
+func TestGetLinkByOriginExist(t *testing.T) {
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	repo := repository.NewInMemoryLinkRepository()
+	serv := NewLinkService(repo, conf)
+	originalLink := "link"
+	shortedLink := shorter.Shorten(originalLink)
+	repo.AddLink(shortedLink, originalLink)
+
+	link, err := serv.GetLinkByOriginal(originalLink)
+
+	assert.Equal(t, link, "http://localhost:8080/"+shortedLink)
+	assert.Equal(t, err, nil)
+}

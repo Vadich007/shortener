@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Vadich007/shortener/internal/config"
+	"github.com/Vadich007/shortener/internal/model"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/Vadich007/shortener/pkg/shorter"
@@ -130,4 +132,99 @@ func TestHandlePostEmptyStringBody(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+}
+
+func TestHandlePostJsonNotExist(t *testing.T) {
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	repo := repository.NewInMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	originalLink := "example.com"
+
+	rawReq := model.Request{
+		Url: originalLink,
+	}
+
+	jsonData, _ := json.Marshal(rawReq)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(jsonData))
+	w := httptest.NewRecorder()
+	req.Header.Set("Content-Type", "application/json")
+
+	hand.HandlePostJson(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	actual, _ := io.ReadAll(resp.Body)
+
+	assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+	assert.Equal(t, string(actual), "Bad request\n")
+}
+
+func TestHandlePostJsonExist(t *testing.T) {
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	repo := repository.NewInMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	originalLink := "example.com"
+	shortedLink := "http://localhost:8080/" + shorter.Shorten(originalLink)
+
+	serv.AddLink(originalLink)
+
+	rawResp := model.Response{
+		Result: shortedLink,
+	}
+
+	rawReq := model.Request{
+		Url: originalLink,
+	}
+
+	jsonData, _ := json.Marshal(rawReq)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(jsonData))
+	w := httptest.NewRecorder()
+	req.Header.Set("Content-Type", "application/json")
+
+	hand.HandlePostJson(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	actual, _ := io.ReadAll(resp.Body)
+
+	jsonDataResp, _ := json.Marshal(rawResp)
+	assert.Equal(t, resp.StatusCode, http.StatusOK)
+	assert.Equal(t, resp.Header.Get("Content-Type"), "application/json")
+	assert.Equal(t, string(actual), string(jsonDataResp)+"\n")
+}
+
+func TestHandlePostJsonWrongHeader(t *testing.T) {
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	repo := repository.NewInMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	originalLink := "example.com"
+
+	serv.AddLink(originalLink)
+
+	rawReq := model.Request{
+		Url: originalLink,
+	}
+
+	jsonData, _ := json.Marshal(rawReq)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(jsonData))
+	w := httptest.NewRecorder()
+	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
+
+	hand.HandlePostJson(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	actual, _ := io.ReadAll(resp.Body)
+
+	assert.Equal(t, resp.StatusCode, http.StatusUnprocessableEntity)
+	assert.Equal(t, string(actual), "Unprocessable entity\n")
 }

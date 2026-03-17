@@ -60,7 +60,7 @@ func (h *LinkHandler) HandlePostJson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(http.StatusUnprocessableEntity)
+		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
 		return
 	}
 
