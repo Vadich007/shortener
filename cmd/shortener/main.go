@@ -36,6 +36,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(loggingMiddleware.WithLogging)
+	r.Use(middleware.WithCompress)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Post("/", hand.HandlePost)
