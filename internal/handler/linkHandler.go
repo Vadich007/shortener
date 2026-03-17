@@ -51,7 +51,7 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (h *LinkHandler) HandlePostJson(w http.ResponseWriter, r *http.Request) {
+func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 	var req model.Request
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

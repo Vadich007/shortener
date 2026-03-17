@@ -151,7 +151,7 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 	w := httptest.NewRecorder()
 	req.Header.Set("Content-Type", "application/json")
 
-	hand.HandlePostJson(w, req)
+	hand.HandlePostJSON(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -186,7 +186,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 	w := httptest.NewRecorder()
 	req.Header.Set("Content-Type", "application/json")
 
-	hand.HandlePostJson(w, req)
+	hand.HandlePostJSON(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -218,7 +218,7 @@ func TestHandlePostJsonWrongHeader(t *testing.T) {
 	w := httptest.NewRecorder()
 	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
 
-	hand.HandlePostJson(w, req)
+	hand.HandlePostJSON(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()

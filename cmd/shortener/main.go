@@ -39,7 +39,7 @@ func main() {
 
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Post("/", hand.HandlePost)
-	r.Post("/api/shorten", hand.HandlePostJson)
+	r.Post("/api/shorten", hand.HandlePostJSON)
 
 	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
