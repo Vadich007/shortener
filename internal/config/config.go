@@ -6,15 +6,17 @@ import (
 )
 
 type Config struct {
-	ServerAddress string
-	BaseURL       string
+	ServerAddress   string
+	BaseURL         string
+	FileStoragePath string
 }
 
 func GetConfig() Config {
-	var serverAddress, baseURL string
+	var serverAddress, baseURL, fileStoragePath string
 	env := env.GetEnv()
 	serverAddress = env.ServerAddress
 	baseURL = env.BaseURL
+	fileStoragePath = env.FileStoragePath
 
 	flag := flags.ProcessingFlags()
 
@@ -26,8 +28,13 @@ func GetConfig() Config {
 		baseURL = flag.B
 	}
 
+	if fileStoragePath == "" {
+		fileStoragePath = flag.F
+	}
+
 	return Config{
-		ServerAddress: serverAddress,
-		BaseURL:       baseURL,
+		ServerAddress:   serverAddress,
+		BaseURL:         baseURL,
+		FileStoragePath: fileStoragePath,
 	}
 }

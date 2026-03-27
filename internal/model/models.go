@@ -7,3 +7,8 @@ type Request struct {
 type Response struct {
 	Result string `json:"result"`
 }
+
+type StorageRecord struct {
+	ShortedURL  string `json:"shorted_url"`
+	OriginalURL string `json:"original_url"`
+}

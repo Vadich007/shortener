@@ -3,11 +3,13 @@ package repository
 import (
 	"testing"
 
+	"github.com/Vadich007/shortener/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetLinkNotExist(t *testing.T) {
-	repo := NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := NewInMemoryLinkRepository(conf)
 	link, err := repo.GetLink("notExist")
 
 	assert.Equal(t, link, "")
@@ -15,7 +17,8 @@ func TestGetLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkExist(t *testing.T) {
-	repo := NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := NewInMemoryLinkRepository(conf)
 	originalName := "link"
 	shortedLink := "short"
 	err := repo.AddLink(shortedLink, originalName)
@@ -27,7 +30,8 @@ func TestGetLinkExist(t *testing.T) {
 }
 
 func TestAddLinkExist(t *testing.T) {
-	repo := NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := NewInMemoryLinkRepository(conf)
 	originalName := "link"
 	shortedLink := "short"
 	repo.AddLink(shortedLink, originalName)
@@ -36,7 +40,8 @@ func TestAddLinkExist(t *testing.T) {
 }
 
 func TestAddLinkNotExist(t *testing.T) {
-	repo := NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := NewInMemoryLinkRepository(conf)
 	originalName := "link"
 	shortedLink := "short"
 	err := repo.AddLink(shortedLink, originalName)

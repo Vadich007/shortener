@@ -10,8 +10,8 @@ import (
 )
 
 func TestGetLinkNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	repo := repository.NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 
 	link, err := serv.GetLink("notExist")
@@ -21,8 +21,8 @@ func TestGetLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	repo := repository.NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	shortedLink := "short"
@@ -35,8 +35,8 @@ func TestGetLinkExist(t *testing.T) {
 }
 
 func TestAddLinkExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	repo := repository.NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
@@ -48,8 +48,8 @@ func TestAddLinkExist(t *testing.T) {
 }
 
 func TestAddLinkNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	repo := repository.NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
@@ -60,8 +60,8 @@ func TestAddLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkByOriginNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	repo := repository.NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 
 	link, err := serv.GetLinkByOriginal("notExist")
@@ -71,8 +71,8 @@ func TestGetLinkByOriginNotExist(t *testing.T) {
 }
 
 func TestGetLinkByOriginExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	repo := repository.NewInMemoryLinkRepository()
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalLink := "link"
 	shortedLink := shorter.Shorten(originalLink)
