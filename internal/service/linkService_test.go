@@ -1,6 +1,7 @@
 package service
 
 import (
+	"os"
 	"testing"
 
 	"github.com/Vadich007/shortener/internal/config"
@@ -9,8 +10,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const storagePath = "test_storage.json"
+
+func Fixture(t *testing.T) {
+	file, err := os.Create(storagePath)
+	if err != nil {
+		panic(err)
+	}
+	file.Close()
+	t.Cleanup(func() {
+		os.Remove(storagePath)
+	})
+}
+
 func TestGetLinkNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 
@@ -21,7 +36,8 @@ func TestGetLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
@@ -35,7 +51,8 @@ func TestGetLinkExist(t *testing.T) {
 }
 
 func TestAddLinkExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
@@ -48,7 +65,8 @@ func TestAddLinkExist(t *testing.T) {
 }
 
 func TestAddLinkNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
@@ -60,7 +78,8 @@ func TestAddLinkNotExist(t *testing.T) {
 }
 
 func TestGetLinkByOriginNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 
@@ -71,7 +90,8 @@ func TestGetLinkByOriginNotExist(t *testing.T) {
 }
 
 func TestGetLinkByOriginExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := NewLinkService(repo, conf)
 	originalLink := "link"
