@@ -23,7 +23,10 @@ func main() {
 
 	sugar = *logger.Sugar()
 	conf := config.GetConfig()
-	repo := repository.NewInMemoryLinkRepository(conf)
+	repo, err := repository.NewInMemoryLinkRepository(conf)
+	if err != nil {
+		panic(err)
+	}
 	serv := service.NewLinkService(repo, conf)
 	hand := handler.NewLinkHandler(serv)
 	loggingMiddleware := middleware.LoggingMiddleware{Sugar: sugar}

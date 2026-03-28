@@ -22,6 +22,11 @@ func NewInMemoryLinkRepository(conf config.Config) (*InMemoryLinkRepository, err
 	if err != nil {
 		return nil, err
 	}
+
+	if len(data) == 0 {
+		return &InMemoryLinkRepository{m: m, path: conf.FileStoragePath}, nil
+	}
+
 	var records []model.StorageRecord
 
 	err = json.Unmarshal(data, &records)
@@ -55,23 +60,25 @@ func (r *InMemoryLinkRepository) AddLink(shortedLink string, originalLink string
 	}
 
 	r.m[shortedLink] = originalLink
-	return r.addToFile(shortedLink, originalLink)
+	return r.saveFile()
 }
 
-func (r *InMemoryLinkRepository) addToFile(shortedLink string, originalLink string) error {
-	file, err := os.OpenFile(r.path, os.O_WRONLY|os.O_APPEND, 0644)
+func (r *InMemoryLinkRepository) saveFile() error {
+	file, err := os.OpenFile(r.path, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	record := model.StorageRecord{ShortedURL: shortedLink,
-		OriginalURL: originalLink}
-	data, err := json.Marshal(record)
+	var records []model.StorageRecord
+	for shortedLink, originalLink := range r.m {
+		records = append(records, model.StorageRecord{ShortedURL: shortedLink,
+			OriginalURL: originalLink})
+	}
+	data, err := json.Marshal(records)
 	if err != nil {
 		return err
 	}
-	data = append(data, '\n')
 	_, err = file.Write(data)
 
 	return err
