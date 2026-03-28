@@ -19,7 +19,7 @@ import (
 )
 
 func TestHandleGetMethodNotAllowed(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -36,7 +36,7 @@ func TestHandleGetMethodNotAllowed(t *testing.T) {
 }
 
 func TestHandleGetNotFound(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -53,7 +53,7 @@ func TestHandleGetNotFound(t *testing.T) {
 }
 
 func TestHandleGetSuccess(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -77,7 +77,7 @@ func TestHandleGetSuccess(t *testing.T) {
 }
 
 func TestHandlePostSuccess(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -101,7 +101,7 @@ func TestHandlePostSuccess(t *testing.T) {
 }
 
 func TestHandlePostEmptyBody(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -118,7 +118,7 @@ func TestHandlePostEmptyBody(t *testing.T) {
 }
 
 func TestHandlePostEmptyStringBody(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -135,7 +135,7 @@ func TestHandlePostEmptyStringBody(t *testing.T) {
 }
 
 func TestHandlePostJsonNotExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -163,7 +163,7 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 }
 
 func TestHandlePostJsonExist(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
@@ -200,7 +200,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 }
 
 func TestHandlePostJsonWrongHeader(t *testing.T) {
-	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "./test_storage.json"}
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: "storage/test_storage.json"}
 	repo, _ := repository.NewInMemoryLinkRepository(conf)
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
