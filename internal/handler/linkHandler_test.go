@@ -162,6 +162,11 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
+	shortedLink := "http://localhost:8080/" + shorter.Shorten(originalLink)
+
+	rawResp := model.Response{
+		Result: shortedLink,
+	}
 
 	rawReq := model.Request{
 		URL: originalLink,
@@ -179,8 +184,10 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 
 	actual, _ := io.ReadAll(resp.Body)
 
-	assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-	assert.Equal(t, string(actual), "Bad request\n")
+	jsonDataResp, _ := json.Marshal(rawResp)
+	assert.Equal(t, resp.StatusCode, http.StatusCreated)
+	assert.Equal(t, resp.Header.Get("Content-Type"), "application/json")
+	assert.Equal(t, string(actual), string(jsonDataResp)+"\n")
 }
 
 func TestHandlePostJsonExist(t *testing.T) {
@@ -216,7 +223,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 	actual, _ := io.ReadAll(resp.Body)
 
 	jsonDataResp, _ := json.Marshal(rawResp)
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
+	assert.Equal(t, resp.StatusCode, http.StatusCreated)
 	assert.Equal(t, resp.Header.Get("Content-Type"), "application/json")
 	assert.Equal(t, string(actual), string(jsonDataResp)+"\n")
 }

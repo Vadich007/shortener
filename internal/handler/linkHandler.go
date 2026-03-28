@@ -64,7 +64,7 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalLink, err := h.service.GetLinkByOriginal(req.URL)
+	shortedLink, err := h.service.AddLink(req.URL)
 
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -72,11 +72,11 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := model.Response{
-		Result: originalLink,
+		Result: shortedLink,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
