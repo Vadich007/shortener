@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"sync"
 
@@ -18,7 +19,13 @@ type InMemoryLinkRepository struct {
 
 func NewInMemoryLinkRepository(conf config.Config) (*InMemoryLinkRepository, error) {
 	m := make(map[string]string)
-	data, err := os.ReadFile(conf.FileStoragePath)
+	file, err := os.OpenFile(conf.FileStoragePath, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
