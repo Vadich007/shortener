@@ -54,13 +54,13 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 	var req model.Request
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
 		return
 	}
 
-	if r.Header.Get("Content-Type") != "application/json" {
-		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
