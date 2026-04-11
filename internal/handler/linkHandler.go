@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
+	"github.com/Vadich007/shortener/internal/model"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
 )
@@ -47,4 +49,36 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	data := []byte(shortedLink)
 	w.Write(data)
+}
+
+func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
+	var req model.Request
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	shortedLink, err := h.service.AddLink(req.URL)
+
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	resp := model.Response{
+		Result: shortedLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
 }

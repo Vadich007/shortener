@@ -1,28 +1,51 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
-	"github.com/Vadich007/shortener/internal/config/flags"
+	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
+	"github.com/Vadich007/shortener/internal/handler/middleware"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
+var sugar zap.SugaredLogger
+
 func main() {
-	f := flags.ProcessingFlags()
-	repo := repository.NewInMemoryLinkRepository()
-	serv := service.NewLinkService(repo, f)
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	sugar = *logger.Sugar()
+	conf := config.GetConfig()
+	repo, err := repository.NewInMemoryLinkRepository(conf)
+	if err != nil {
+		panic(err)
+	}
+	serv := service.NewLinkService(repo, conf)
 	hand := handler.NewLinkHandler(serv)
+	loggingMiddleware := middleware.LoggingMiddleware{Sugar: sugar}
+
+	sugar.Infow(
+		"Starting server",
+		"addr", conf.ServerAddress,
+	)
 
 	r := chi.NewRouter()
 
+	r.Use(loggingMiddleware.WithLogging)
+	r.Use(middleware.WithCompress)
+
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Post("/", hand.HandlePost)
+	r.Post("/api/shorten", hand.HandlePostJSON)
 
-	if err := http.ListenAndServe(f.A, r); err != nil {
-		log.Fatal("Server failed to start:", err)
+	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
+		sugar.Fatalw(err.Error(), "event", "start server")
 	}
 }
