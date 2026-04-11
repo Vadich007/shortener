@@ -9,14 +9,15 @@ type Config struct {
 	ServerAddress   string
 	BaseURL         string
 	FileStoragePath string
+	DatabaseDsn     string
 }
 
 func GetConfig() Config {
-	var serverAddress, baseURL, fileStoragePath string
 	env := env.GetEnv()
-	serverAddress = env.ServerAddress
-	baseURL = env.BaseURL
-	fileStoragePath = env.FileStoragePath
+	serverAddress := env.ServerAddress
+	baseURL := env.BaseURL
+	fileStoragePath := env.FileStoragePath
+	databaseDsn := env.DatabaseDsn
 
 	flag := flags.ProcessingFlags()
 
@@ -32,9 +33,14 @@ func GetConfig() Config {
 		fileStoragePath = flag.F
 	}
 
+	if databaseDsn == "" {
+		databaseDsn = flag.D
+	}
+
 	return Config{
 		ServerAddress:   serverAddress,
 		BaseURL:         baseURL,
 		FileStoragePath: fileStoragePath,
+		DatabaseDsn:     databaseDsn,
 	}
 }

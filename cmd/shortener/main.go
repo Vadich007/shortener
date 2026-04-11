@@ -42,6 +42,7 @@ func main() {
 	r.Use(middleware.WithCompress)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
+	r.Get("/ping", hand.PingDb)
 	r.Post("/", hand.HandlePost)
 	r.Post("/api/shorten", hand.HandlePostJSON)
 
