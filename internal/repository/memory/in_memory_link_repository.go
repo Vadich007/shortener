@@ -1,4 +1,4 @@
-package repository
+package memory
 
 import (
 	"encoding/json"
@@ -89,4 +89,8 @@ func (r *InMemoryLinkRepository) saveFile() error {
 	_, err = file.Write(data)
 
 	return err
+}
+
+func (r *InMemoryLinkRepository) PingDB() error {
+	return nil
 }
