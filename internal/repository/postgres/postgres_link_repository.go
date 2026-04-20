@@ -13,16 +13,12 @@ type PostgresLinkRepository struct {
 	db *sql.DB
 }
 
-func NewPostrgesLinkRepository(conf config.Config) *PostgresLinkRepository {
+func NewPostrgesLinkRepository(conf config.Config) (*PostgresLinkRepository, error) {
 	db, err := sql.Open("pgx", conf.DatabaseDsn)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
 
 	return &PostgresLinkRepository{
 		db: db,
-	}
+	}, err
 }
 
 func (r *PostgresLinkRepository) GetLink(shortedLink string) (string, error) {

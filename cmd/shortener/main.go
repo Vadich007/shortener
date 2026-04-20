@@ -6,7 +6,7 @@ import (
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
 	"github.com/Vadich007/shortener/internal/handler/middleware"
-	"github.com/Vadich007/shortener/internal/repository/memory"
+	"github.com/Vadich007/shortener/internal/repository/factory"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ func main() {
 
 	sugar = *logger.Sugar()
 	conf := config.GetConfig()
-	repo, err := memory.NewInMemoryLinkRepository(conf)
+	repo, err := factory.GetRepository(conf)
 	if err != nil {
 		panic(err)
 	}
