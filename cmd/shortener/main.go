@@ -6,7 +6,7 @@ import (
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
 	"github.com/Vadich007/shortener/internal/handler/middleware"
-	"github.com/Vadich007/shortener/internal/repository"
+	"github.com/Vadich007/shortener/internal/repository/memory"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ func main() {
 
 	sugar = *logger.Sugar()
 	conf := config.GetConfig()
-	repo, err := repository.NewInMemoryLinkRepository(conf)
+	repo, err := memory.NewInMemoryLinkRepository(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 	r.Use(middleware.WithCompress)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
-	r.Get("/ping", hand.PingDb)
+	r.Get("/ping", hand.PingDB)
 	r.Post("/", hand.HandlePost)
 	r.Post("/api/shorten", hand.HandlePostJSON)
 

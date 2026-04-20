@@ -83,8 +83,8 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *LinkHandler) PingDb(w http.ResponseWriter, r *http.Request) {
-	if err := h.service.PingDb(); err != nil {
+func (h *LinkHandler) PingDB(w http.ResponseWriter, r *http.Request) {
+	if err := h.service.PingDB(); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 	w.WriteHeader(http.StatusOK)
