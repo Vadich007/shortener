@@ -44,9 +44,9 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 	shortedLink, err := h.service.AddLink(bodyString)
 	if err != nil {
-		var linkAlreadyExistError = model.NewLinkAlreadyExistError(shortedLink)
-		if errors.Is(err, linkAlreadyExistError) {
-			http.Error(w, linkAlreadyExistError.Error(), http.StatusConflict)
+		var linkAlreadyExistError *model.LinkAlreadyExistError
+		if errors.As(err, &linkAlreadyExistError) {
+			http.Error(w, linkAlreadyExistError.ShortedLink, http.StatusConflict)
 		} else {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 		}
@@ -73,21 +73,22 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 
 	shortedLink, err := h.service.AddLink(req.URL)
 
+	resp := model.Response{
+		Result: shortedLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		var linkAlreadyExistError = model.NewLinkAlreadyExistError(shortedLink)
-		if errors.Is(err, linkAlreadyExistError) {
-			http.Error(w, linkAlreadyExistError.Error(), http.StatusConflict)
+		var linkAlreadyExistError *model.LinkAlreadyExistError
+		if errors.As(err, &linkAlreadyExistError) {
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(resp)
 		} else {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 		}
 		return
 	}
 
-	resp := model.Response{
-		Result: shortedLink,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)

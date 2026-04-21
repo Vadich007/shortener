@@ -223,7 +223,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 	actual, _ := io.ReadAll(resp.Body)
 
 	jsonDataResp, _ := json.Marshal(rawResp)
-	assert.Equal(t, resp.StatusCode, http.StatusCreated)
+	assert.Equal(t, resp.StatusCode, http.StatusConflict)
 	assert.Equal(t, resp.Header.Get("Content-Type"), "application/json")
 	assert.Equal(t, string(actual), string(jsonDataResp)+"\n")
 }
