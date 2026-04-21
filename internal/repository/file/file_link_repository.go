@@ -95,7 +95,7 @@ func (r *FileLinkRepository) AddLinksBatch(request *model.BatchRequest, shortedM
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for _, record := range request.Records {
-		shortedLink := shortedMap[record.CorrelationId]
+		shortedLink := shortedMap[record.CorrelationID]
 		if _, exist := r.m[shortedLink]; exist {
 			continue
 		}

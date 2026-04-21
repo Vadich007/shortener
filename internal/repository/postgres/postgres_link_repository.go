@@ -68,7 +68,7 @@ func (r *PostgresLinkRepository) AddLinksBatch(request *model.BatchRequest, m ma
 	}
 	for _, record := range request.Records {
 		_, err := tx.Exec("INSERT INTO links (shorted_url, original_url) VALUES ($1, $2)",
-			m[record.CorrelationId],
+			m[record.CorrelationID],
 			record.OriginalURL,
 		)
 		if err != nil {
