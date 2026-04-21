@@ -89,3 +89,31 @@ func (h *LinkHandler) PingDB(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *LinkHandler) Batch(w http.ResponseWriter, r *http.Request) {
+	var req model.BatchRequest
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.service.AddLinksBatch(&req)
+
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+}

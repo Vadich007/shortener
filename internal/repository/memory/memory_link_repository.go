@@ -3,6 +3,8 @@ package memory
 import (
 	"errors"
 	"sync"
+
+	"github.com/Vadich007/shortener/internal/model"
 )
 
 type MemoryLinkRepository struct {
@@ -39,5 +41,13 @@ func (r *MemoryLinkRepository) AddLink(shortedLink string, originalLink string) 
 }
 
 func (r *MemoryLinkRepository) PingDB() error {
+	return nil
+}
+
+func (r *MemoryLinkRepository) AddLinksBatch(request *model.BatchRequest, shortedMap map[string]string) error {
+	for _, record := range request.Records {
+		r.AddLink(shortedMap[record.CorrelationId], record.OriginalURL)
+	}
+
 	return nil
 }

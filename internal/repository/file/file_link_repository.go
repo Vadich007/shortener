@@ -91,6 +91,21 @@ func (r *FileLinkRepository) saveFile() error {
 	return err
 }
 
+func (r *FileLinkRepository) AddLinksBatch(request *model.BatchRequest, shortedMap map[string]string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, record := range request.Records {
+		shortedLink := shortedMap[record.CorrelationId]
+		if _, exist := r.m[shortedLink]; exist {
+			continue
+		}
+
+		r.m[shortedLink] = record.OriginalURL
+	}
+
+	return r.saveFile()
+}
+
 func (r *FileLinkRepository) PingDB() error {
 	return nil
 }

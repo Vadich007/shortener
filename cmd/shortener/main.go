@@ -45,6 +45,7 @@ func main() {
 	r.Get("/ping", hand.PingDB)
 	r.Post("/", hand.HandlePost)
 	r.Post("/api/shorten", hand.HandlePostJSON)
+	r.Post("/api/shorten/batch", hand.Batch)
 
 	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
