@@ -23,7 +23,7 @@ func NewPostrgesLinkRepository(conf config.Config) (*PostgresLinkRepository, err
 }
 
 func (r *PostgresLinkRepository) GetLink(shortedLink string) (string, error) {
-	row := r.db.QueryRow("SELECT original_url FROM links WHERE shorted_url = ?", shortedLink)
+	row := r.db.QueryRow("SELECT original_url FROM links WHERE shorted_url = $1", shortedLink)
 	var originalLink string
 	err := row.Scan(&originalLink)
 	return originalLink, err
