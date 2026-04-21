@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Vadich007/shortener/internal/config"
+	"github.com/Vadich007/shortener/internal/model"
 	"github.com/Vadich007/shortener/internal/repository/memory"
 	"github.com/Vadich007/shortener/pkg/shorter"
 	"github.com/stretchr/testify/assert"
@@ -60,7 +61,7 @@ func TestAddLinkExist(t *testing.T) {
 	repo.AddLink(shorter.Shorten(originalName), originalName)
 
 	actualShortedLink, err := serv.AddLink(originalName)
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, model.NewLinkAlreadyExistError(shorter.Shorten(originalName)))
 	assert.Equal(t, actualShortedLink, expectedShortedLink)
 }
 
