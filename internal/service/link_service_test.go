@@ -26,7 +26,7 @@ func Fixture(t *testing.T) {
 func TestGetLinkNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := memory.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 
 	link, err := serv.GetLink("notExist")
@@ -38,7 +38,7 @@ func TestGetLinkNotExist(t *testing.T) {
 func TestGetLinkExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := memory.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	shortedLink := "short"
@@ -53,7 +53,7 @@ func TestGetLinkExist(t *testing.T) {
 func TestAddLinkExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := memory.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
@@ -67,7 +67,7 @@ func TestAddLinkExist(t *testing.T) {
 func TestAddLinkNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := memory.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
