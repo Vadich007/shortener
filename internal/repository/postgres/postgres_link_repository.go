@@ -31,7 +31,7 @@ func (r *PostgresLinkRepository) GetLink(shortedLink string) (string, error) {
 
 func (r *PostgresLinkRepository) AddLink(shortedLink string, originalLink string) error {
 	if _, err := r.GetLink(shortedLink); err == nil {
-		return nil
+		return model.NewLinkAlreadyExistError(shortedLink)
 	}
 
 	tx, err := r.db.Begin()

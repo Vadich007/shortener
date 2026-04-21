@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -43,9 +44,15 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 	shortedLink, err := h.service.AddLink(bodyString)
 	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		var linkAlreadyExistError = model.NewLinkAlreadyExistError(shortedLink)
+		if errors.Is(err, linkAlreadyExistError) {
+			http.Error(w, linkAlreadyExistError.Error(), http.StatusConflict)
+		} else {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+		}
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	data := []byte(shortedLink)
 	w.Write(data)
@@ -67,7 +74,12 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 	shortedLink, err := h.service.AddLink(req.URL)
 
 	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		var linkAlreadyExistError = model.NewLinkAlreadyExistError(shortedLink)
+		if errors.Is(err, linkAlreadyExistError) {
+			http.Error(w, linkAlreadyExistError.Error(), http.StatusConflict)
+		} else {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+		}
 		return
 	}
 

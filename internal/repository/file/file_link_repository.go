@@ -63,7 +63,7 @@ func (r *FileLinkRepository) AddLink(shortedLink string, originalLink string) er
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, exist := r.m[shortedLink]; exist {
-		return nil
+		return model.NewLinkAlreadyExistError(shortedLink)
 	}
 
 	r.m[shortedLink] = originalLink
