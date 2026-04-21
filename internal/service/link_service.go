@@ -38,7 +38,7 @@ func (s *LinkService) AddLinksBatch(request []model.BatchRecordRequest) ([]model
 		m[originalRecord.CorrelationID] = shortedLink
 		response = append(response, model.BatchRecordResponse{
 			CorrelationID: originalRecord.CorrelationID,
-			ShortedURL:    shortedLink,
+			ShortedURL:    s.conf.BaseURL + "/" + shortedLink,
 		})
 	}
 
