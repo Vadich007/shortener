@@ -21,9 +21,9 @@ type PostgresLinkRepository struct {
 func NewPostrgesLinkRepository(conf config.Config) (*PostgresLinkRepository, error) {
 	db, err := sql.Open("pgx", conf.DatabaseDsn)
 
-	// if err := runMigrations(db); err != nil {
-	// 	return nil, err
-	// }
+	if err := runMigrations(db); err != nil {
+		return nil, err
+	}
 
 	return &PostgresLinkRepository{
 		db: db,
