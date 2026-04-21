@@ -79,7 +79,8 @@ func (r *FileLinkRepository) saveFile() error {
 
 	var records []model.StorageRecord
 	for shortedLink, originalLink := range r.m {
-		records = append(records, model.StorageRecord{ShortedURL: shortedLink,
+		records = append(records, model.StorageRecord{
+			ShortedURL:  shortedLink,
 			OriginalURL: originalLink})
 	}
 	data, err := json.Marshal(records)

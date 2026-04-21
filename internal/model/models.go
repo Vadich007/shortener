@@ -15,7 +15,7 @@ type StorageRecord struct {
 
 type BatchRecordResponse struct {
 	CorrelationID string `json:"correlation_id"`
-	ShortedURL    string `json:"shorted_url"`
+	ShortedURL    string `json:"short_url"`
 }
 
 type BatchRecordRequest struct {
