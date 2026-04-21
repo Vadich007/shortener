@@ -3,10 +3,14 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/model"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -17,9 +21,35 @@ type PostgresLinkRepository struct {
 func NewPostrgesLinkRepository(conf config.Config) (*PostgresLinkRepository, error) {
 	db, err := sql.Open("pgx", conf.DatabaseDsn)
 
+	if err := runMigrations(db); err != nil {
+		return nil, err
+	}
+
 	return &PostgresLinkRepository{
 		db: db,
 	}, err
+}
+
+func runMigrations(db *sql.DB) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return fmt.Errorf("could not create database driver: %w", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://migrations",
+		"postgres",
+		driver,
+	)
+	if err != nil {
+		return fmt.Errorf("could not create migrate instance: %w", err)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("could not run migrations: %w", err)
+	}
+
+	return nil
 }
 
 func (r *PostgresLinkRepository) GetLink(shortedLink string) (string, error) {
