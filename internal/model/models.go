@@ -13,17 +13,9 @@ type StorageRecord struct {
 	OriginalURL string `json:"original_url"`
 }
 
-type BatchResponse struct {
-	Records []BatchRecordResponse
-}
-
 type BatchRecordResponse struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortedURL    string `json:"shorted_url"`
-}
-
-type BatchRequest struct {
-	Records []BatchRecordRequest
 }
 
 type BatchRecordRequest struct {

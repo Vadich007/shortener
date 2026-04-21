@@ -21,9 +21,9 @@ type PostgresLinkRepository struct {
 func NewPostrgesLinkRepository(conf config.Config) (*PostgresLinkRepository, error) {
 	db, err := sql.Open("pgx", conf.DatabaseDsn)
 
-	if err := runMigrations(db); err != nil {
-		return nil, err
-	}
+	// if err := runMigrations(db); err != nil {
+	// 	return nil, err
+	// }
 
 	return &PostgresLinkRepository{
 		db: db,
@@ -91,12 +91,12 @@ func (r *PostgresLinkRepository) PingDB() error {
 	return nil
 }
 
-func (r *PostgresLinkRepository) AddLinksBatch(request *model.BatchRequest, m map[string]string) error {
+func (r *PostgresLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, m map[string]string) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
-	for _, record := range request.Records {
+	for _, record := range request {
 		_, err := tx.Exec("INSERT INTO links (shorted_url, original_url) VALUES ($1, $2)",
 			m[record.CorrelationID],
 			record.OriginalURL,

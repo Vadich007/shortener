@@ -29,18 +29,18 @@ func (s *LinkService) PingDB() error {
 	return s.repository.PingDB()
 }
 
-func (s *LinkService) AddLinksBatch(request *model.BatchRequest) (*model.BatchResponse, error) {
+func (s *LinkService) AddLinksBatch(request []model.BatchRecordRequest) ([]model.BatchRecordResponse, error) {
 	m := make(map[string]string)
-	var response model.BatchResponse
+	var response []model.BatchRecordResponse
 
-	for _, originalRecord := range request.Records {
+	for _, originalRecord := range request {
 		shortedLink := shorter.Shorten(originalRecord.OriginalURL)
 		m[originalRecord.CorrelationID] = shortedLink
-		response.Records = append(response.Records, model.BatchRecordResponse{
+		response = append(response, model.BatchRecordResponse{
 			CorrelationID: originalRecord.CorrelationID,
 			ShortedURL:    shortedLink,
 		})
 	}
 
-	return &response, s.repository.AddLinksBatch(request, m)
+	return response, s.repository.AddLinksBatch(request, m)
 }

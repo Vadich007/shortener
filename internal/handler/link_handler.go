@@ -104,7 +104,7 @@ func (h *LinkHandler) PingDB(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LinkHandler) Batch(w http.ResponseWriter, r *http.Request) {
-	var req model.BatchRequest
+	var req []model.BatchRecordRequest
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
@@ -116,7 +116,7 @@ func (h *LinkHandler) Batch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.service.AddLinksBatch(&req)
+	resp, err := h.service.AddLinksBatch(req)
 
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)

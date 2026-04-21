@@ -44,8 +44,8 @@ func (r *MemoryLinkRepository) PingDB() error {
 	return nil
 }
 
-func (r *MemoryLinkRepository) AddLinksBatch(request *model.BatchRequest, shortedMap map[string]string) error {
-	for _, record := range request.Records {
+func (r *MemoryLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, shortedMap map[string]string) error {
+	for _, record := range request {
 		r.AddLink(shortedMap[record.CorrelationID], record.OriginalURL)
 	}
 

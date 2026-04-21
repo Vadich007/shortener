@@ -6,5 +6,5 @@ type Service interface {
 	GetLink(shortedLink string) (string, error)
 	AddLink(originalLink string) (string, error)
 	PingDB() error
-	AddLinksBatch(*model.BatchRequest) (*model.BatchResponse, error)
+	AddLinksBatch([]model.BatchRecordRequest) ([]model.BatchRecordResponse, error)
 }

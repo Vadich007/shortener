@@ -6,5 +6,5 @@ type LinkRepository interface {
 	GetLink(string) (string, error)
 	AddLink(string, string) error
 	PingDB() error
-	AddLinksBatch(*model.BatchRequest, map[string]string) error
+	AddLinksBatch([]model.BatchRecordRequest, map[string]string) error
 }

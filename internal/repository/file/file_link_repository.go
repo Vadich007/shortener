@@ -91,10 +91,10 @@ func (r *FileLinkRepository) saveFile() error {
 	return err
 }
 
-func (r *FileLinkRepository) AddLinksBatch(request *model.BatchRequest, shortedMap map[string]string) error {
+func (r *FileLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, shortedMap map[string]string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	for _, record := range request.Records {
+	for _, record := range request {
 		shortedLink := shortedMap[record.CorrelationID]
 		if _, exist := r.m[shortedLink]; exist {
 			continue
