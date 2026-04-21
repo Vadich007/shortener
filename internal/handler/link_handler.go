@@ -46,7 +46,9 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var linkAlreadyExistError *model.LinkAlreadyExistError
 		if errors.As(err, &linkAlreadyExistError) {
-			http.Error(w, shortedLink, http.StatusConflict)
+			w.WriteHeader(http.StatusConflict)
+			data := []byte(shortedLink)
+			w.Write(data)
 		} else {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 		}
