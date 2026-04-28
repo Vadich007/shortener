@@ -1,10 +1,13 @@
-package repository
+package service
 
 import (
 	"os"
 	"testing"
 
 	"github.com/Vadich007/shortener/internal/config"
+	"github.com/Vadich007/shortener/internal/model"
+	"github.com/Vadich007/shortener/internal/repository/memory"
+	"github.com/Vadich007/shortener/pkg/shorter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,8 +27,10 @@ func Fixture(t *testing.T) {
 func TestGetLinkNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := NewInMemoryLinkRepository(conf)
-	link, err := repo.GetLink("notExist")
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := NewLinkService(repo, conf)
+
+	link, err := serv.GetLink("notExist")
 
 	assert.Equal(t, link, "")
 	assert.Equal(t, err.Error(), "link doesn't exist")
@@ -34,12 +39,13 @@ func TestGetLinkNotExist(t *testing.T) {
 func TestGetLinkExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := NewLinkService(repo, conf)
 	originalName := "link"
 	shortedLink := "short"
-	err := repo.AddLink(shortedLink, originalName)
-	assert.Equal(t, err, nil)
-	link, err := repo.GetLink(shortedLink)
+	repo.AddLink(shortedLink, originalName)
+
+	link, err := serv.GetLink(shortedLink)
 
 	assert.Equal(t, link, originalName)
 	assert.Equal(t, err, nil)
@@ -48,20 +54,26 @@ func TestGetLinkExist(t *testing.T) {
 func TestAddLinkExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := NewLinkService(repo, conf)
 	originalName := "link"
-	shortedLink := "short"
-	repo.AddLink(shortedLink, originalName)
-	err := repo.AddLink(shortedLink, originalName)
-	assert.Equal(t, err, nil)
+	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
+	repo.AddLink(shorter.Shorten(originalName), originalName)
+
+	actualShortedLink, err := serv.AddLink(originalName)
+	assert.Equal(t, err, model.NewLinkAlreadyExistError(shorter.Shorten(originalName)))
+	assert.Equal(t, actualShortedLink, expectedShortedLink)
 }
 
 func TestAddLinkNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := NewLinkService(repo, conf)
 	originalName := "link"
-	shortedLink := "short"
-	err := repo.AddLink(shortedLink, originalName)
+	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
+
+	actualShortedLink, err := serv.AddLink(originalName)
 	assert.Equal(t, err, nil)
+	assert.Equal(t, actualShortedLink, expectedShortedLink)
 }

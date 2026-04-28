@@ -12,7 +12,7 @@ import (
 
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/model"
-	"github.com/Vadich007/shortener/internal/repository"
+	"github.com/Vadich007/shortener/internal/repository/memory"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/Vadich007/shortener/pkg/shorter"
 	"github.com/go-chi/chi/v5"
@@ -35,7 +35,7 @@ func Fixture(t *testing.T) {
 func TestHandleGetMethodNotAllowed(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -53,7 +53,7 @@ func TestHandleGetMethodNotAllowed(t *testing.T) {
 func TestHandleGetNotFound(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -71,7 +71,7 @@ func TestHandleGetNotFound(t *testing.T) {
 func TestHandleGetSuccess(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -96,7 +96,7 @@ func TestHandleGetSuccess(t *testing.T) {
 func TestHandlePostSuccess(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -121,7 +121,7 @@ func TestHandlePostSuccess(t *testing.T) {
 func TestHandlePostEmptyBody(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -139,7 +139,7 @@ func TestHandlePostEmptyBody(t *testing.T) {
 func TestHandlePostEmptyStringBody(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -157,7 +157,7 @@ func TestHandlePostEmptyStringBody(t *testing.T) {
 func TestHandlePostJsonNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -193,7 +193,7 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 func TestHandlePostJsonExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 
@@ -223,7 +223,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 	actual, _ := io.ReadAll(resp.Body)
 
 	jsonDataResp, _ := json.Marshal(rawResp)
-	assert.Equal(t, resp.StatusCode, http.StatusCreated)
+	assert.Equal(t, resp.StatusCode, http.StatusConflict)
 	assert.Equal(t, resp.Header.Get("Content-Type"), "application/json")
 	assert.Equal(t, string(actual), string(jsonDataResp)+"\n")
 }
@@ -231,7 +231,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 func TestHandlePostJsonWrongHeader(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
-	repo, _ := repository.NewInMemoryLinkRepository(conf)
+	repo, _ := memory.NewMemoryLinkRepository()
 	serv := service.NewLinkService(repo, conf)
 	hand := NewLinkHandler(serv)
 

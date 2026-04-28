@@ -6,6 +6,7 @@ type Flags struct {
 	A string
 	B string
 	F string
+	D string
 }
 
 func ProcessingFlags() Flags {
@@ -13,6 +14,7 @@ func ProcessingFlags() Flags {
 	flag.StringVar(&f.A, "a", "localhost:8080", "HTTP server address")
 	flag.StringVar(&f.B, "b", "http://localhost:8080", "base address")
 	flag.StringVar(&f.F, "f", "storage/storage.json", "file storage path")
+	flag.StringVar(&f.D, "d", "", "database address")
 	flag.Parse()
 	return f
 }

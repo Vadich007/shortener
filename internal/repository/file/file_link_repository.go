@@ -1,4 +1,4 @@
-package repository
+package file
 
 import (
 	"encoding/json"
@@ -11,13 +11,13 @@ import (
 	"github.com/Vadich007/shortener/internal/model"
 )
 
-type InMemoryLinkRepository struct {
+type FileLinkRepository struct {
 	mu   sync.RWMutex
 	m    map[string]string
 	path string
 }
 
-func NewInMemoryLinkRepository(conf config.Config) (*InMemoryLinkRepository, error) {
+func NewFileLinkRepository(conf config.Config) (*FileLinkRepository, error) {
 	m := make(map[string]string)
 	file, err := os.OpenFile(conf.FileStoragePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
@@ -31,7 +31,7 @@ func NewInMemoryLinkRepository(conf config.Config) (*InMemoryLinkRepository, err
 	}
 
 	if len(data) == 0 {
-		return &InMemoryLinkRepository{m: m, path: conf.FileStoragePath}, nil
+		return &FileLinkRepository{m: m, path: conf.FileStoragePath}, nil
 	}
 
 	var records []model.StorageRecord
@@ -45,10 +45,10 @@ func NewInMemoryLinkRepository(conf config.Config) (*InMemoryLinkRepository, err
 		m[record.ShortedURL] = record.OriginalURL
 	}
 
-	return &InMemoryLinkRepository{m: m, path: conf.FileStoragePath}, nil
+	return &FileLinkRepository{m: m, path: conf.FileStoragePath}, nil
 }
 
-func (r *InMemoryLinkRepository) GetLink(shortedLink string) (string, error) {
+func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -59,18 +59,18 @@ func (r *InMemoryLinkRepository) GetLink(shortedLink string) (string, error) {
 	return "", errors.New("link doesn't exist")
 }
 
-func (r *InMemoryLinkRepository) AddLink(shortedLink string, originalLink string) error {
+func (r *FileLinkRepository) AddLink(shortedLink string, originalLink string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, exist := r.m[shortedLink]; exist {
-		return nil
+		return model.NewLinkAlreadyExistError(shortedLink)
 	}
 
 	r.m[shortedLink] = originalLink
 	return r.saveFile()
 }
 
-func (r *InMemoryLinkRepository) saveFile() error {
+func (r *FileLinkRepository) saveFile() error {
 	file, err := os.OpenFile(r.path, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -79,7 +79,8 @@ func (r *InMemoryLinkRepository) saveFile() error {
 
 	var records []model.StorageRecord
 	for shortedLink, originalLink := range r.m {
-		records = append(records, model.StorageRecord{ShortedURL: shortedLink,
+		records = append(records, model.StorageRecord{
+			ShortedURL:  shortedLink,
 			OriginalURL: originalLink})
 	}
 	data, err := json.Marshal(records)
@@ -89,4 +90,23 @@ func (r *InMemoryLinkRepository) saveFile() error {
 	_, err = file.Write(data)
 
 	return err
+}
+
+func (r *FileLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, shortedMap map[string]string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, record := range request {
+		shortedLink := shortedMap[record.CorrelationID]
+		if _, exist := r.m[shortedLink]; exist {
+			continue
+		}
+
+		r.m[shortedLink] = record.OriginalURL
+	}
+
+	return r.saveFile()
+}
+
+func (r *FileLinkRepository) PingDB() error {
+	return nil
 }

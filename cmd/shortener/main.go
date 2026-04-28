@@ -6,7 +6,7 @@ import (
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
 	"github.com/Vadich007/shortener/internal/handler/middleware"
-	"github.com/Vadich007/shortener/internal/repository"
+	"github.com/Vadich007/shortener/internal/repository/factory"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ func main() {
 
 	sugar = *logger.Sugar()
 	conf := config.GetConfig()
-	repo, err := repository.NewInMemoryLinkRepository(conf)
+	repo, err := factory.GetRepository(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -42,8 +42,10 @@ func main() {
 	r.Use(middleware.WithCompress)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
+	r.Get("/ping", hand.PingDB)
 	r.Post("/", hand.HandlePost)
 	r.Post("/api/shorten", hand.HandlePostJSON)
+	r.Post("/api/shorten/batch", hand.Batch)
 
 	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
