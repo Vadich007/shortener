@@ -38,7 +38,7 @@ func TestGetLinkExist(t *testing.T) {
 	repo, _ := NewFileLinkRepository(conf)
 	originalName := "link"
 	shortedLink := "short"
-	err := repo.AddLink(shortedLink, originalName)
+	err := repo.AddLink(shortedLink, originalName, 0)
 	assert.Equal(t, err, nil)
 	link, err := repo.GetLink(shortedLink)
 
@@ -52,8 +52,8 @@ func TestAddLinkExist(t *testing.T) {
 	repo, _ := NewFileLinkRepository(conf)
 	originalName := "link"
 	shortedLink := "short"
-	repo.AddLink(shortedLink, originalName)
-	err := repo.AddLink(shortedLink, originalName)
+	repo.AddLink(shortedLink, originalName, 0)
+	err := repo.AddLink(shortedLink, originalName, 0)
 	assert.Equal(t, err, model.NewLinkAlreadyExistError(shortedLink))
 }
 
@@ -63,7 +63,7 @@ func TestAddLinkNotExist(t *testing.T) {
 	repo, _ := NewFileLinkRepository(conf)
 	originalName := "link"
 	shortedLink := "short"
-	err := repo.AddLink(shortedLink, originalName)
+	err := repo.AddLink(shortedLink, originalName, 0)
 	assert.Equal(t, err, nil)
 }
 

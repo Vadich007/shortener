@@ -40,12 +40,14 @@ func main() {
 
 	r.Use(loggingMiddleware.WithLogging)
 	r.Use(middleware.WithCompress)
+	r.Use(middleware.AuthMiddleware)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Get("/ping", hand.PingDB)
 	r.Post("/", hand.HandlePost)
 	r.Post("/api/shorten", hand.HandlePostJSON)
 	r.Post("/api/shorten/batch", hand.Batch)
+	r.Get("/api/user/urls", hand.GetUserUrls)
 
 	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")

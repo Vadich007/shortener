@@ -11,6 +11,12 @@ type Response struct {
 type StorageRecord struct {
 	ShortedURL  string `json:"shorted_url"`
 	OriginalURL string `json:"original_url"`
+	UserID      int    `json:"user_id"`
+}
+
+type UserURLResponse struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
 type BatchRecordResponse struct {

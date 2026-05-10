@@ -59,7 +59,7 @@ func (r *PostgresLinkRepository) GetLink(shortedLink string) (string, error) {
 	return originalLink, err
 }
 
-func (r *PostgresLinkRepository) AddLink(shortedLink string, originalLink string) error {
+func (r *PostgresLinkRepository) AddLink(shortedLink, originalLink string, userID int) error {
 	if _, err := r.GetLink(shortedLink); err == nil {
 		return model.NewLinkAlreadyExistError(shortedLink)
 	}
@@ -69,9 +69,10 @@ func (r *PostgresLinkRepository) AddLink(shortedLink string, originalLink string
 		return err
 	}
 	_, err = tx.Exec(
-		"INSERT INTO links (shorted_url, original_url) VALUES ($1, $2)",
+		"INSERT INTO links (shorted_url, original_url, user_id) VALUES ($1, $2, $3)",
 		shortedLink,
 		originalLink,
+		userID,
 	)
 
 	if err != nil {
@@ -91,15 +92,17 @@ func (r *PostgresLinkRepository) PingDB() error {
 	return nil
 }
 
-func (r *PostgresLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, m map[string]string) error {
+func (r *PostgresLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, m map[string]string, userID int) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
 	for _, record := range request {
-		_, err := tx.Exec("INSERT INTO links (shorted_url, original_url) VALUES ($1, $2)",
+		_, err := tx.Exec(
+			"INSERT INTO links (shorted_url, original_url, user_id) VALUES ($1, $2, $3)",
 			m[record.CorrelationID],
 			record.OriginalURL,
+			userID,
 		)
 		if err != nil {
 			tx.Rollback()
@@ -107,4 +110,25 @@ func (r *PostgresLinkRepository) AddLinksBatch(request []model.BatchRecordReques
 		}
 	}
 	return tx.Commit()
+}
+
+func (r *PostgresLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse, error) {
+	rows, err := r.db.Query(
+		"SELECT shorted_url, original_url FROM links WHERE user_id = $1",
+		userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []model.UserURLResponse
+	for rows.Next() {
+		var rec model.UserURLResponse
+		if err := rows.Scan(&rec.ShortURL, &rec.OriginalURL); err != nil {
+			return nil, err
+		}
+		result = append(result, rec)
+	}
+	return result, rows.Err()
 }

@@ -20,16 +20,16 @@ func (s *LinkService) GetLink(shortedLink string) (string, error) {
 	return s.repository.GetLink(shortedLink)
 }
 
-func (s *LinkService) AddLink(originalLink string) (string, error) {
+func (s *LinkService) AddLink(originalLink string, userID int) (string, error) {
 	shortedLink := shorter.Shorten(originalLink)
-	return s.conf.BaseURL + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink)
+	return s.conf.BaseURL + "/" + shortedLink, s.repository.AddLink(shortedLink, originalLink, userID)
 }
 
 func (s *LinkService) PingDB() error {
 	return s.repository.PingDB()
 }
 
-func (s *LinkService) AddLinksBatch(request []model.BatchRecordRequest) ([]model.BatchRecordResponse, error) {
+func (s *LinkService) AddLinksBatch(request []model.BatchRecordRequest, userID int) ([]model.BatchRecordResponse, error) {
 	m := make(map[string]string)
 	var response []model.BatchRecordResponse
 
@@ -42,5 +42,16 @@ func (s *LinkService) AddLinksBatch(request []model.BatchRecordRequest) ([]model
 		})
 	}
 
-	return response, s.repository.AddLinksBatch(request, m)
+	return response, s.repository.AddLinksBatch(request, m, userID)
+}
+
+func (s *LinkService) GetUserUrls(userID int) ([]model.UserURLResponse, error) {
+	records, err := s.repository.GetUserUrls(userID)
+	if err != nil {
+		return nil, err
+	}
+	for i := range records {
+		records[i].ShortURL = s.conf.BaseURL + "/" + records[i].ShortURL
+	}
+	return records, nil
 }

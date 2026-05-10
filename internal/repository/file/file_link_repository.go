@@ -13,12 +13,12 @@ import (
 
 type FileLinkRepository struct {
 	mu   sync.RWMutex
-	m    map[string]string
+	m    map[string]model.StorageRecord
 	path string
 }
 
 func NewFileLinkRepository(conf config.Config) (*FileLinkRepository, error) {
-	m := make(map[string]string)
+	m := make(map[string]model.StorageRecord)
 	file, err := os.OpenFile(conf.FileStoragePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return nil, err
@@ -35,14 +35,12 @@ func NewFileLinkRepository(conf config.Config) (*FileLinkRepository, error) {
 	}
 
 	var records []model.StorageRecord
-
-	err = json.Unmarshal(data, &records)
-	if err != nil {
+	if err = json.Unmarshal(data, &records); err != nil {
 		return nil, err
 	}
 
 	for _, record := range records {
-		m[record.ShortedURL] = record.OriginalURL
+		m[record.ShortedURL] = record
 	}
 
 	return &FileLinkRepository{m: m, path: conf.FileStoragePath}, nil
@@ -52,21 +50,25 @@ func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	originalLink, exist := r.m[shortedLink]
+	record, exist := r.m[shortedLink]
 	if exist {
-		return originalLink, nil
+		return record.OriginalURL, nil
 	}
 	return "", errors.New("link doesn't exist")
 }
 
-func (r *FileLinkRepository) AddLink(shortedLink string, originalLink string) error {
+func (r *FileLinkRepository) AddLink(shortedLink, originalLink string, userID int) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, exist := r.m[shortedLink]; exist {
 		return model.NewLinkAlreadyExistError(shortedLink)
 	}
 
-	r.m[shortedLink] = originalLink
+	r.m[shortedLink] = model.StorageRecord{
+		ShortedURL:  shortedLink,
+		OriginalURL: originalLink,
+		UserID:      userID,
+	}
 	return r.saveFile()
 }
 
@@ -78,21 +80,18 @@ func (r *FileLinkRepository) saveFile() error {
 	defer file.Close()
 
 	var records []model.StorageRecord
-	for shortedLink, originalLink := range r.m {
-		records = append(records, model.StorageRecord{
-			ShortedURL:  shortedLink,
-			OriginalURL: originalLink})
+	for _, record := range r.m {
+		records = append(records, record)
 	}
 	data, err := json.Marshal(records)
 	if err != nil {
 		return err
 	}
 	_, err = file.Write(data)
-
 	return err
 }
 
-func (r *FileLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, shortedMap map[string]string) error {
+func (r *FileLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, shortedMap map[string]string, userID int) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for _, record := range request {
@@ -100,13 +99,31 @@ func (r *FileLinkRepository) AddLinksBatch(request []model.BatchRecordRequest, s
 		if _, exist := r.m[shortedLink]; exist {
 			continue
 		}
-
-		r.m[shortedLink] = record.OriginalURL
+		r.m[shortedLink] = model.StorageRecord{
+			ShortedURL:  shortedLink,
+			OriginalURL: record.OriginalURL,
+			UserID:      userID,
+		}
 	}
-
 	return r.saveFile()
 }
 
 func (r *FileLinkRepository) PingDB() error {
 	return nil
+}
+
+func (r *FileLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []model.UserURLResponse
+	for _, record := range r.m {
+		if record.UserID == userID {
+			result = append(result, model.UserURLResponse{
+				ShortURL:    record.ShortedURL,
+				OriginalURL: record.OriginalURL,
+			})
+		}
+	}
+	return result, nil
 }

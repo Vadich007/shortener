@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Vadich007/shortener/internal/handler/middleware"
 	"github.com/Vadich007/shortener/internal/model"
 	"github.com/Vadich007/shortener/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -42,13 +43,13 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusBadRequest)
 		return
 	}
-	shortedLink, err := h.service.AddLink(bodyString)
+	userID, _ := middleware.GetUserIDFromContext(r.Context())
+	shortedLink, err := h.service.AddLink(bodyString, userID)
 	if err != nil {
 		var linkAlreadyExistError *model.LinkAlreadyExistError
 		if errors.As(err, &linkAlreadyExistError) {
 			w.WriteHeader(http.StatusConflict)
-			data := []byte(shortedLink)
-			w.Write(data)
+			w.Write([]byte(shortedLink))
 		} else {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 		}
@@ -56,8 +57,7 @@ func (h *LinkHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	data := []byte(shortedLink)
-	w.Write(data)
+	w.Write([]byte(shortedLink))
 }
 
 func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +73,8 @@ func (h *LinkHandler) HandlePostJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortedLink, err := h.service.AddLink(req.URL)
+	userID, _ := middleware.GetUserIDFromContext(r.Context())
+	shortedLink, err := h.service.AddLink(req.URL, userID)
 
 	resp := model.Response{
 		Result: shortedLink,
@@ -119,7 +120,8 @@ func (h *LinkHandler) Batch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.service.AddLinksBatch(req)
+	userID, _ := middleware.GetUserIDFromContext(r.Context())
+	resp, err := h.service.AddLinksBatch(req, userID)
 
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -132,4 +134,20 @@ func (h *LinkHandler) Batch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+}
+
+func (h *LinkHandler) GetUserUrls(w http.ResponseWriter, r *http.Request) {
+	userID, _ := middleware.GetUserIDFromContext(r.Context())
+	urls, err := h.service.GetUserUrls(userID)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if len(urls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(urls)
 }
