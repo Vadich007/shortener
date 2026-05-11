@@ -8,4 +8,5 @@ type Service interface {
 	PingDB() error
 	AddLinksBatch(request []model.BatchRecordRequest, userID int) ([]model.BatchRecordResponse, error)
 	GetUserUrls(userID int) ([]model.UserURLResponse, error)
+	DeleteURLs(userID int, shortURLs []string)
 }

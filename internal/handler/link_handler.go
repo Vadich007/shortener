@@ -24,7 +24,12 @@ func (h *LinkHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	shortedLink := chi.URLParam(r, "shortedLink")
 	originalLink, err := h.service.GetLink(shortedLink)
 	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		var deletedErr *model.LinkDeletedError
+		if errors.As(err, &deletedErr) {
+			w.WriteHeader(http.StatusGone)
+		} else {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+		}
 		return
 	}
 	w.Header().Set("Location", originalLink)
@@ -150,4 +155,22 @@ func (h *LinkHandler) GetUserUrls(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(urls)
+}
+
+func (h *LinkHandler) DeleteUserUrls(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "Unprocessable entity", http.StatusUnprocessableEntity)
+		return
+	}
+
+	var shortURLs []string
+	if err := json.NewDecoder(r.Body).Decode(&shortURLs); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, _ := middleware.GetUserIDFromContext(r.Context())
+	h.service.DeleteURLs(userID, shortURLs)
+
+	w.WriteHeader(http.StatusAccepted)
 }

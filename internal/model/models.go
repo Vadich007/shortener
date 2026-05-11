@@ -12,6 +12,7 @@ type StorageRecord struct {
 	ShortedURL  string `json:"shorted_url"`
 	OriginalURL string `json:"original_url"`
 	UserID      int    `json:"user_id"`
+	DeletedFlag bool   `json:"is_deleted"`
 }
 
 type UserURLResponse struct {

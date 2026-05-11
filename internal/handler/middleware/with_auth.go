@@ -7,7 +7,6 @@ import (
 	"github.com/Vadich007/shortener/internal/model"
 )
 
-// AuthMiddleware проверяет наличие валидной JWT куки
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(model.COOKIE_NAME)
@@ -46,7 +45,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// GetUserIDFromContext извлекает UserID из контекста запроса.
 func GetUserIDFromContext(ctx context.Context) (int, bool) {
 	userID, ok := ctx.Value("userID").(int)
 	return userID, ok

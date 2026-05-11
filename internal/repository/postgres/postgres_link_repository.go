@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Vadich007/shortener/internal/config"
@@ -25,9 +26,7 @@ func NewPostrgesLinkRepository(conf config.Config) (*PostgresLinkRepository, err
 		return nil, err
 	}
 
-	return &PostgresLinkRepository{
-		db: db,
-	}, err
+	return &PostgresLinkRepository{db: db}, err
 }
 
 func runMigrations(db *sql.DB) error {
@@ -53,10 +52,19 @@ func runMigrations(db *sql.DB) error {
 }
 
 func (r *PostgresLinkRepository) GetLink(shortedLink string) (string, error) {
-	row := r.db.QueryRow("SELECT original_url FROM links WHERE shorted_url = $1", shortedLink)
+	row := r.db.QueryRow(
+		"SELECT original_url, is_deleted FROM links WHERE shorted_url = $1",
+		shortedLink,
+	)
 	var originalLink string
-	err := row.Scan(&originalLink)
-	return originalLink, err
+	var isDeleted bool
+	if err := row.Scan(&originalLink, &isDeleted); err != nil {
+		return "", err
+	}
+	if isDeleted {
+		return "", model.NewLinkDeletedError(shortedLink)
+	}
+	return originalLink, nil
 }
 
 func (r *PostgresLinkRepository) AddLink(shortedLink, originalLink string, userID int) error {
@@ -70,16 +78,12 @@ func (r *PostgresLinkRepository) AddLink(shortedLink, originalLink string, userI
 	}
 	_, err = tx.Exec(
 		"INSERT INTO links (shorted_url, original_url, user_id) VALUES ($1, $2, $3)",
-		shortedLink,
-		originalLink,
-		userID,
+		shortedLink, originalLink, userID,
 	)
-
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-
 	return tx.Commit()
 }
 
@@ -100,9 +104,7 @@ func (r *PostgresLinkRepository) AddLinksBatch(request []model.BatchRecordReques
 	for _, record := range request {
 		_, err := tx.Exec(
 			"INSERT INTO links (shorted_url, original_url, user_id) VALUES ($1, $2, $3)",
-			m[record.CorrelationID],
-			record.OriginalURL,
-			userID,
+			m[record.CorrelationID], record.OriginalURL, userID,
 		)
 		if err != nil {
 			tx.Rollback()
@@ -114,7 +116,7 @@ func (r *PostgresLinkRepository) AddLinksBatch(request []model.BatchRecordReques
 
 func (r *PostgresLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse, error) {
 	rows, err := r.db.Query(
-		"SELECT shorted_url, original_url FROM links WHERE user_id = $1",
+		"SELECT shorted_url, original_url FROM links WHERE user_id = $1 AND is_deleted = false",
 		userID,
 	)
 	if err != nil {
@@ -131,4 +133,26 @@ func (r *PostgresLinkRepository) GetUserUrls(userID int) ([]model.UserURLRespons
 		result = append(result, rec)
 	}
 	return result, rows.Err()
+}
+
+func (r *PostgresLinkRepository) DeleteURLsBatch(userID int, shortURLs []string) error {
+	if len(shortURLs) == 0 {
+		return nil
+	}
+
+	args := make([]interface{}, 0, len(shortURLs)+1)
+	args = append(args, userID)
+	placeholders := make([]string, len(shortURLs))
+	for i, u := range shortURLs {
+		args = append(args, u)
+		placeholders[i] = fmt.Sprintf("$%d", i+2)
+	}
+
+	query := fmt.Sprintf(
+		"UPDATE links SET is_deleted = true WHERE user_id = $1 AND shorted_url IN (%s)",
+		strings.Join(placeholders, ", "),
+	)
+
+	_, err := r.db.Exec(query, args...)
+	return err
 }

@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler/middleware"
@@ -328,6 +329,128 @@ func TestGetUserUrlsInvalidCookie(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestHandleGetGone(t *testing.T) {
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	r := chi.NewRouter()
+	r.Get("/{shortedLink}", hand.HandleGet)
+
+	repo.AddLink("abc123", "https://example.com", 1)
+	repo.DeleteURLsBatch(1, []string{"abc123"})
+
+	req := httptest.NewRequest(http.MethodGet, "/abc123", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusGone, resp.StatusCode)
+}
+
+func TestDeleteUserUrlsAccepted(t *testing.T) {
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	body, _ := json.Marshal([]string{"abc123", "def456"})
+	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	w := httptest.NewRecorder()
+
+	hand.DeleteUserUrls(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
+}
+
+func TestDeleteUserUrlsWrongContentType(t *testing.T) {
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBufferString(`["abc"]`))
+	req.Header.Set("Content-Type", "text/plain")
+	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	w := httptest.NewRecorder()
+
+	hand.DeleteUserUrls(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+}
+
+func TestDeleteUserUrlsInvalidJSON(t *testing.T) {
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBufferString(`not json`))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	w := httptest.NewRecorder()
+
+	hand.DeleteUserUrls(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+}
+
+func TestDeleteUserUrlsThenGetGone(t *testing.T) {
+	Fixture(t)
+	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
+	repo, _ := memory.NewMemoryLinkRepository()
+	serv := service.NewLinkService(repo, conf)
+	hand := NewLinkHandler(serv)
+
+	r := chi.NewRouter()
+	r.Use(middleware.AuthMiddleware)
+	r.Get("/{shortedLink}", hand.HandleGet)
+	r.Delete("/api/user/urls", hand.DeleteUserUrls)
+
+	// создаём JWT-куку для userID=42
+	token, _ := model.BuildJWTString(42)
+
+	// сохраняем ссылку напрямую в репозиторий
+	shortKey := "myshort"
+	repo.AddLink(shortKey, "https://example.com", 42)
+
+	// DELETE запрос
+	body, _ := json.Marshal([]string{shortKey})
+	delReq := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBuffer(body))
+	delReq.Header.Set("Content-Type", "application/json")
+	delReq.AddCookie(&http.Cookie{Name: "auth_token", Value: token})
+	delW := httptest.NewRecorder()
+	r.ServeHTTP(delW, delReq)
+	assert.Equal(t, http.StatusAccepted, delW.Result().StatusCode)
+
+	// ждём асинхронного удаления
+	assert.Eventually(t, func() bool {
+		getReq := httptest.NewRequest(http.MethodGet, "/"+shortKey, nil)
+		getReq.AddCookie(&http.Cookie{Name: "auth_token", Value: token})
+		getW := httptest.NewRecorder()
+		r.ServeHTTP(getW, getReq)
+		return getW.Result().StatusCode == http.StatusGone
+	}, 2*time.Second, 100*time.Millisecond)
 }
 
 func TestGetUserUrlsNoCookieSetsNewCookie(t *testing.T) {

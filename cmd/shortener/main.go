@@ -48,6 +48,7 @@ func main() {
 	r.Post("/api/shorten", hand.HandlePostJSON)
 	r.Post("/api/shorten/batch", hand.Batch)
 	r.Get("/api/user/urls", hand.GetUserUrls)
+	r.Delete("/api/user/urls", hand.DeleteUserUrls)
 
 	if err := http.ListenAndServe(conf.ServerAddress, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")

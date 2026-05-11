@@ -51,10 +51,13 @@ func (r *FileLinkRepository) GetLink(shortedLink string) (string, error) {
 	defer r.mu.RUnlock()
 
 	record, exist := r.m[shortedLink]
-	if exist {
-		return record.OriginalURL, nil
+	if !exist {
+		return "", errors.New("link doesn't exist")
 	}
-	return "", errors.New("link doesn't exist")
+	if record.DeletedFlag {
+		return "", model.NewLinkDeletedError(shortedLink)
+	}
+	return record.OriginalURL, nil
 }
 
 func (r *FileLinkRepository) AddLink(shortedLink, originalLink string, userID int) error {
@@ -63,7 +66,6 @@ func (r *FileLinkRepository) AddLink(shortedLink, originalLink string, userID in
 	if _, exist := r.m[shortedLink]; exist {
 		return model.NewLinkAlreadyExistError(shortedLink)
 	}
-
 	r.m[shortedLink] = model.StorageRecord{
 		ShortedURL:  shortedLink,
 		OriginalURL: originalLink,
@@ -118,7 +120,7 @@ func (r *FileLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse, e
 
 	var result []model.UserURLResponse
 	for _, record := range r.m {
-		if record.UserID == userID {
+		if record.UserID == userID && !record.DeletedFlag {
 			result = append(result, model.UserURLResponse{
 				ShortURL:    record.ShortedURL,
 				OriginalURL: record.OriginalURL,
@@ -126,4 +128,30 @@ func (r *FileLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse, e
 		}
 	}
 	return result, nil
+}
+
+func (r *FileLinkRepository) DeleteURLsBatch(userID int, shortURLs []string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	toDelete := make(map[string]struct{}, len(shortURLs))
+	for _, u := range shortURLs {
+		toDelete[u] = struct{}{}
+	}
+
+	changed := false
+	for key, record := range r.m {
+		if record.UserID == userID {
+			if _, ok := toDelete[key]; ok {
+				record.DeletedFlag = true
+				r.m[key] = record
+				changed = true
+			}
+		}
+	}
+
+	if changed {
+		return r.saveFile()
+	}
+	return nil
 }

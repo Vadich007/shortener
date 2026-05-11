@@ -13,8 +13,7 @@ type MemoryLinkRepository struct {
 }
 
 func NewMemoryLinkRepository() (*MemoryLinkRepository, error) {
-	m := make(map[string]model.StorageRecord)
-	return &MemoryLinkRepository{m: m}, nil
+	return &MemoryLinkRepository{m: make(map[string]model.StorageRecord)}, nil
 }
 
 func (r *MemoryLinkRepository) GetLink(shortedLink string) (string, error) {
@@ -22,10 +21,13 @@ func (r *MemoryLinkRepository) GetLink(shortedLink string) (string, error) {
 	defer r.mu.RUnlock()
 
 	record, exist := r.m[shortedLink]
-	if exist {
-		return record.OriginalURL, nil
+	if !exist {
+		return "", errors.New("link doesn't exist")
 	}
-	return "", errors.New("link doesn't exist")
+	if record.DeletedFlag {
+		return "", model.NewLinkDeletedError(shortedLink)
+	}
+	return record.OriginalURL, nil
 }
 
 func (r *MemoryLinkRepository) AddLink(shortedLink, originalLink string, userID int) error {
@@ -34,7 +36,6 @@ func (r *MemoryLinkRepository) AddLink(shortedLink, originalLink string, userID 
 	if _, exist := r.m[shortedLink]; exist {
 		return model.NewLinkAlreadyExistError(shortedLink)
 	}
-
 	r.m[shortedLink] = model.StorageRecord{
 		ShortedURL:  shortedLink,
 		OriginalURL: originalLink,
@@ -60,7 +61,7 @@ func (r *MemoryLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse,
 
 	var result []model.UserURLResponse
 	for _, record := range r.m {
-		if record.UserID == userID {
+		if record.UserID == userID && !record.DeletedFlag {
 			result = append(result, model.UserURLResponse{
 				ShortURL:    record.ShortedURL,
 				OriginalURL: record.OriginalURL,
@@ -68,4 +69,24 @@ func (r *MemoryLinkRepository) GetUserUrls(userID int) ([]model.UserURLResponse,
 		}
 	}
 	return result, nil
+}
+
+func (r *MemoryLinkRepository) DeleteURLsBatch(userID int, shortURLs []string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	toDelete := make(map[string]struct{}, len(shortURLs))
+	for _, u := range shortURLs {
+		toDelete[u] = struct{}{}
+	}
+
+	for key, record := range r.m {
+		if record.UserID == userID {
+			if _, ok := toDelete[key]; ok {
+				record.DeletedFlag = true
+				r.m[key] = record
+			}
+		}
+	}
+	return nil
 }

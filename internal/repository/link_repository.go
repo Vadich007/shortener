@@ -8,4 +8,5 @@ type LinkRepository interface {
 	PingDB() error
 	AddLinksBatch(request []model.BatchRecordRequest, shortedMap map[string]string, userID int) error
 	GetUserUrls(userID int) ([]model.UserURLResponse, error)
+	DeleteURLsBatch(userID int, shortURLs []string) error
 }

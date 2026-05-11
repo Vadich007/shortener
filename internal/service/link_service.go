@@ -1,19 +1,33 @@
 package service
 
 import (
+	"time"
+
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/model"
 	"github.com/Vadich007/shortener/internal/repository"
 	"github.com/Vadich007/shortener/pkg/shorter"
 )
 
+type deleteTask struct {
+	userID   int
+	shortURL string
+}
+
 type LinkService struct {
 	repository repository.LinkRepository
 	conf       config.Config
+	deleteCh   chan deleteTask
 }
 
 func NewLinkService(r repository.LinkRepository, conf config.Config) *LinkService {
-	return &LinkService{repository: r, conf: conf}
+	s := &LinkService{
+		repository: r,
+		conf:       conf,
+		deleteCh:   make(chan deleteTask, 1024),
+	}
+	go s.flushDeletes()
+	return s
 }
 
 func (s *LinkService) GetLink(shortedLink string) (string, error) {
@@ -54,4 +68,40 @@ func (s *LinkService) GetUserUrls(userID int) ([]model.UserURLResponse, error) {
 		records[i].ShortURL = s.conf.BaseURL + "/" + records[i].ShortURL
 	}
 	return records, nil
+}
+
+// DeleteURLs принимает список коротких идентификаторов и асинхронно помечает их удалёнными.
+// Каждый запрос порождает горутину, которая проталкивает задачи в общий deleteCh (паттерн fanIn).
+func (s *LinkService) DeleteURLs(userID int, shortURLs []string) {
+	go func() {
+		for _, u := range shortURLs {
+			s.deleteCh <- deleteTask{userID: userID, shortURL: u}
+		}
+	}()
+}
+
+// flushDeletes — единственный потребитель deleteCh. Накапливает задачи и батчами отправляет в репозиторий.
+func (s *LinkService) flushDeletes() {
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	var batch []deleteTask
+	for {
+		select {
+		case task := <-s.deleteCh:
+			batch = append(batch, task)
+		case <-ticker.C:
+			if len(batch) == 0 {
+				continue
+			}
+			byUser := make(map[int][]string)
+			for _, t := range batch {
+				byUser[t.userID] = append(byUser[t.userID], t.shortURL)
+			}
+			for uid, urls := range byUser {
+				s.repository.DeleteURLsBatch(uid, urls)
+			}
+			batch = batch[:0]
+		}
+	}
 }
