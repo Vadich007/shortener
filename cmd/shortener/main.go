@@ -2,6 +2,10 @@ package main
 
 import (
 	"net/http"
+	"os/signal"
+	"syscall"
+
+	"context"
 
 	"github.com/Vadich007/shortener/internal/config"
 	"github.com/Vadich007/shortener/internal/handler"
@@ -27,9 +31,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	serv := service.NewLinkService(repo, conf)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	serv := service.NewLinkService(ctx, repo, conf)
 	hand := handler.NewLinkHandler(serv)
 	loggingMiddleware := middleware.LoggingMiddleware{Sugar: sugar}
+	authMiddleware := middleware.AuthMiddleware{SecretKey: conf.SecretKey}
 
 	sugar.Infow(
 		"Starting server",
@@ -40,7 +49,7 @@ func main() {
 
 	r.Use(loggingMiddleware.WithLogging)
 	r.Use(middleware.WithCompress)
-	r.Use(middleware.AuthMiddleware)
+	r.Use(authMiddleware.Handle)
 
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Get("/ping", hand.PingDB)

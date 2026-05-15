@@ -7,25 +7,24 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const SECRET_KEY = "secretkey"
-const TOKEN_EXP = time.Hour * 24
-const COOKIE_NAME = "auth_token"
+const TokenExp = time.Hour * 24
+const CookieName = "auth_token"
 
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID int `json:"user_id"`
 }
 
-func BuildJWTString(userID int) (string, error) {
+func BuildJWTString(userID int, secretKey string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		UserID: userID,
 	})
 
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
@@ -33,10 +32,10 @@ func BuildJWTString(userID int) (string, error) {
 	return tokenString, nil
 }
 
-func GetUserID(tokenString string) (int, error) {
+func GetUserID(tokenString, secretKey string) (int, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(SECRET_KEY), nil
+		return []byte(secretKey), nil
 	})
 
 	if err != nil {

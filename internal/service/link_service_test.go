@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"os"
 	"testing"
@@ -30,7 +31,7 @@ func TestGetLinkNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	link, err := serv.GetLink("notExist")
 
@@ -42,7 +43,7 @@ func TestGetLinkExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 	originalName := "link"
 	shortedLink := "short"
 	repo.AddLink(shortedLink, originalName, 0)
@@ -57,7 +58,7 @@ func TestAddLinkExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
 	repo.AddLink(shorter.Shorten(originalName), originalName, 0)
@@ -71,7 +72,7 @@ func TestAddLinkNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 	originalName := "link"
 	expectedShortedLink := "http://localhost:8080/" + shorter.Shorten(originalName)
 
@@ -84,7 +85,7 @@ func TestGetUserUrlsEmptyService(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	urls, err := serv.GetUserUrls(1)
 	assert.NoError(t, err)
@@ -95,7 +96,7 @@ func TestGetUserUrlsService(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	originalURL := "https://example.com"
 	serv.AddLink(originalURL, 7)
@@ -111,7 +112,7 @@ func TestGetLinkDeletedService(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	repo.AddLink("short", "https://example.com", 1)
 	repo.DeleteURLsBatch(1, []string{"short"})
@@ -125,7 +126,7 @@ func TestGetUserUrlsServiceIsolation(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	serv.AddLink("https://user1.com", 1)
 	serv.AddLink("https://user2.com", 2)
@@ -143,7 +144,7 @@ func TestDeleteURLsAsyncEventuallyDeletes(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	originalURL := "https://example.com/async"
 	serv.AddLink(originalURL, 1)
@@ -164,7 +165,7 @@ func TestDeleteURLsAsyncExcludedFromUserUrls(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	serv.AddLink("https://keep.com", 1)
 	serv.AddLink("https://delete.com", 1)
@@ -182,7 +183,7 @@ func TestDeleteURLsWrongOwnerNoEffect(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := NewLinkService(repo, conf)
+	serv := NewLinkService(context.Background(), repo, conf)
 
 	originalURL := "https://owned-by-user1.com"
 	serv.AddLink(originalURL, 1)

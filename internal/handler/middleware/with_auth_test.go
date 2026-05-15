@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testSecretKey = "testsecret"
+
 func TestAuthMiddlewareNoCookie(t *testing.T) {
 	var gotUserID int
 	var gotOK bool
@@ -19,7 +21,7 @@ func TestAuthMiddlewareNoCookie(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
-	AuthMiddleware(next).ServeHTTP(w, req)
+	AuthMiddleware{SecretKey: testSecretKey}.Handle(next).ServeHTTP(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -30,7 +32,7 @@ func TestAuthMiddlewareNoCookie(t *testing.T) {
 
 	var authCookie *http.Cookie
 	for _, c := range resp.Cookies() {
-		if c.Name == model.COOKIE_NAME {
+		if c.Name == model.CookieName {
 			authCookie = c
 		}
 	}
@@ -41,7 +43,7 @@ func TestAuthMiddlewareNoCookie(t *testing.T) {
 func TestAuthMiddlewareValidCookie(t *testing.T) {
 	const expectedUserID = 42
 
-	token, err := model.BuildJWTString(expectedUserID)
+	token, err := model.BuildJWTString(expectedUserID, testSecretKey)
 	require.NoError(t, err)
 
 	var gotUserID int
@@ -50,9 +52,9 @@ func TestAuthMiddlewareValidCookie(t *testing.T) {
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.AddCookie(&http.Cookie{Name: model.COOKIE_NAME, Value: token})
+	req.AddCookie(&http.Cookie{Name: model.CookieName, Value: token})
 	w := httptest.NewRecorder()
-	AuthMiddleware(next).ServeHTTP(w, req)
+	AuthMiddleware{SecretKey: testSecretKey}.Handle(next).ServeHTTP(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -68,9 +70,9 @@ func TestAuthMiddlewareInvalidCookie(t *testing.T) {
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.AddCookie(&http.Cookie{Name: model.COOKIE_NAME, Value: "not.a.valid.jwt"})
+	req.AddCookie(&http.Cookie{Name: model.CookieName, Value: "not.a.valid.jwt"})
 	w := httptest.NewRecorder()
-	AuthMiddleware(next).ServeHTTP(w, req)
+	AuthMiddleware{SecretKey: testSecretKey}.Handle(next).ServeHTTP(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/Vadich007/shortener/internal/config"
@@ -20,13 +21,13 @@ type LinkService struct {
 	deleteCh   chan deleteTask
 }
 
-func NewLinkService(r repository.LinkRepository, conf config.Config) *LinkService {
+func NewLinkService(ctx context.Context, r repository.LinkRepository, conf config.Config) *LinkService {
 	s := &LinkService{
 		repository: r,
 		conf:       conf,
 		deleteCh:   make(chan deleteTask, 1024),
 	}
-	go s.flushDeletes()
+	go s.flushDeletes(ctx)
 	return s
 }
 
@@ -81,13 +82,15 @@ func (s *LinkService) DeleteURLs(userID int, shortURLs []string) {
 }
 
 // flushDeletes — единственный потребитель deleteCh. Накапливает задачи и батчами отправляет в репозиторий.
-func (s *LinkService) flushDeletes() {
+func (s *LinkService) flushDeletes(ctx context.Context) {
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
 	var batch []deleteTask
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case task := <-s.deleteCh:
 			batch = append(batch, task)
 		case <-ticker.C:

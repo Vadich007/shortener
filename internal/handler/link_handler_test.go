@@ -40,7 +40,7 @@ func TestHandleGetMethodNotAllowed(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPut, "/", nil)
@@ -58,7 +58,7 @@ func TestHandleGetNotFound(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodGet, "/asdsad", nil)
@@ -76,7 +76,7 @@ func TestHandleGetSuccess(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	r := chi.NewRouter()
@@ -101,7 +101,7 @@ func TestHandlePostSuccess(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
@@ -126,7 +126,7 @@ func TestHandlePostEmptyBody(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -144,7 +144,7 @@ func TestHandlePostEmptyStringBody(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(""))
@@ -162,7 +162,7 @@ func TestHandlePostJsonNotExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
@@ -198,7 +198,7 @@ func TestHandlePostJsonExist(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
@@ -236,11 +236,11 @@ func TestGetUserUrlsNoContent(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
-	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	req = req.WithContext(middleware.ContextWithUserID(req.Context(), 1))
 	w := httptest.NewRecorder()
 
 	hand.GetUserUrls(w, req)
@@ -255,7 +255,7 @@ func TestGetUserUrlsSuccess(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	const userID = 5
@@ -263,7 +263,7 @@ func TestGetUserUrlsSuccess(t *testing.T) {
 	serv.AddLink(originalURL, userID)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
-	req = req.WithContext(context.WithValue(req.Context(), "userID", userID))
+	req = req.WithContext(middleware.ContextWithUserID(req.Context(), userID))
 	w := httptest.NewRecorder()
 
 	hand.GetUserUrls(w, req)
@@ -285,14 +285,14 @@ func TestGetUserUrlsOnlyOwnUrls(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	serv.AddLink("https://user10.com", 10)
 	serv.AddLink("https://user20.com", 20)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
-	req = req.WithContext(context.WithValue(req.Context(), "userID", 10))
+	req = req.WithContext(middleware.ContextWithUserID(req.Context(), 10))
 	w := httptest.NewRecorder()
 
 	hand.GetUserUrls(w, req)
@@ -312,11 +312,12 @@ func TestGetUserUrlsInvalidCookie(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
+	authMW := middleware.AuthMiddleware{SecretKey: "secretkey"}
 	r := chi.NewRouter()
-	r.Use(middleware.AuthMiddleware)
+	r.Use(authMW.Handle)
 	r.Get("/api/user/urls", hand.GetUserUrls)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
@@ -335,7 +336,7 @@ func TestHandleGetGone(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	r := chi.NewRouter()
@@ -358,13 +359,13 @@ func TestDeleteUserUrlsAccepted(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	body, _ := json.Marshal([]string{"abc123", "def456"})
 	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	req = req.WithContext(middleware.ContextWithUserID(req.Context(), 1))
 	w := httptest.NewRecorder()
 
 	hand.DeleteUserUrls(w, req)
@@ -379,12 +380,12 @@ func TestDeleteUserUrlsWrongContentType(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBufferString(`["abc"]`))
 	req.Header.Set("Content-Type", "text/plain")
-	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	req = req.WithContext(middleware.ContextWithUserID(req.Context(), 1))
 	w := httptest.NewRecorder()
 
 	hand.DeleteUserUrls(w, req)
@@ -399,12 +400,12 @@ func TestDeleteUserUrlsInvalidJSON(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewBufferString(`not json`))
 	req.Header.Set("Content-Type", "application/json")
-	req = req.WithContext(context.WithValue(req.Context(), "userID", 1))
+	req = req.WithContext(middleware.ContextWithUserID(req.Context(), 1))
 	w := httptest.NewRecorder()
 
 	hand.DeleteUserUrls(w, req)
@@ -419,16 +420,17 @@ func TestDeleteUserUrlsThenGetGone(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
+	authMW := middleware.AuthMiddleware{SecretKey: "secretkey"}
 	r := chi.NewRouter()
-	r.Use(middleware.AuthMiddleware)
+	r.Use(authMW.Handle)
 	r.Get("/{shortedLink}", hand.HandleGet)
 	r.Delete("/api/user/urls", hand.DeleteUserUrls)
 
 	// создаём JWT-куку для userID=42
-	token, _ := model.BuildJWTString(42)
+	token, _ := model.BuildJWTString(42, "secretkey")
 
 	// сохраняем ссылку напрямую в репозиторий
 	shortKey := "myshort"
@@ -457,11 +459,12 @@ func TestGetUserUrlsNoCookieSetsNewCookie(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
+	authMW := middleware.AuthMiddleware{SecretKey: "secretkey"}
 	r := chi.NewRouter()
-	r.Use(middleware.AuthMiddleware)
+	r.Use(authMW.Handle)
 	r.Get("/api/user/urls", hand.GetUserUrls)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
@@ -486,7 +489,7 @@ func TestHandlePostJsonWrongHeader(t *testing.T) {
 	Fixture(t)
 	conf := config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080", FileStoragePath: storagePath}
 	repo, _ := memory.NewMemoryLinkRepository()
-	serv := service.NewLinkService(repo, conf)
+	serv := service.NewLinkService(context.Background(), repo, conf)
 	hand := NewLinkHandler(serv)
 
 	originalLink := "example.com"
