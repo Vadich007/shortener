@@ -10,6 +10,7 @@ type Config struct {
 	BaseURL         string
 	FileStoragePath string
 	DatabaseDsn     string
+	SecretKey       string
 }
 
 func GetConfig() Config {
@@ -18,6 +19,7 @@ func GetConfig() Config {
 	baseURL := env.BaseURL
 	fileStoragePath := env.FileStoragePath
 	databaseDsn := env.DatabaseDsn
+	secretKey := env.SecretKey
 
 	flag := flags.ProcessingFlags()
 
@@ -37,10 +39,15 @@ func GetConfig() Config {
 		databaseDsn = flag.D
 	}
 
+	if secretKey == "" {
+		secretKey = flag.S
+	}
+
 	return Config{
 		ServerAddress:   serverAddress,
 		BaseURL:         baseURL,
 		FileStoragePath: fileStoragePath,
 		DatabaseDsn:     databaseDsn,
+		SecretKey:       secretKey,
 	}
 }
